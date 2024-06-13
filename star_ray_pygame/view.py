@@ -16,7 +16,13 @@ from star_ray import Event
 from star_ray.utils import _LOGGER
 
 
-from .event import EVENT_MAP, PYGAME_WINDOWFOCUS, PYGAME_WINDOWMOVE, PYGAME_WINDOWOPEN
+from .event import (
+    EVENT_MAP,
+    PYGAME_WINDOWFOCUS,
+    PYGAME_WINDOWMOVE,
+    PYGAME_WINDOWOPEN,
+    PYGAME_WINDOWRESIZE,
+)
 
 
 class View:
@@ -42,11 +48,14 @@ class View:
         )  # root of the svg tree, defaults to an empty svg
         self._source = None  # source of the svg (required by cairosvg unfortunately)
         self._closed = False
-        screen_info = pygame.display.get_desktop_sizes()
-        assert len(screen_info) == 1  # TODO multiple monitors not supported...
-        self._screen_size = screen_info[0]
+        self._screen_size = get_screen_size()
         self._pwc_window = None
         self._pwc_window = self._setup_pwc_window()
+
+        # initial events that are the window position/size
+        window_info = self.get_window_info()
+        self._window_resize_callback(window_info["size"])
+        self._window_moved_callback(window_info["position"])
 
     def get_window_info(self):
         # sanity check...
@@ -131,6 +140,8 @@ class View:
             self._window_config.width = width
             self._window_config.height = height
             self._surface = pygame.Surface((width, height))
+            # this doesnt seem to get called during `set_mode` above...
+            self._window_resize_callback((width, height))
 
     def _window_open_callback(self):
         """Callback for when the pygame window is opened for the first time. A custom pygame event is added to the queue internally. The associated event timestamp is not accurate, but the event serves as an indication of when this view is ready to for updating/rendering."""
@@ -143,6 +154,10 @@ class View:
     def _window_moved_callback(self, position):
         """Callback for `pywinctl` when the pygame window is moved. A custom pygame event is added to the queue internally."""
         pygame.event.post(pygame.event.Event(PYGAME_WINDOWMOVE, position=position))
+
+    def _window_resize_callback(self, size):
+        """Callback for `pywinctl` when the pygame window is resized. A custom pygame event is added to the queue internally."""
+        pygame.event.post(pygame.event.Event(PYGAME_WINDOWRESIZE, size=size))
 
     def _setup_pwc_window(self):
         """Getter for the `pywinctl` window object. This object is used to watch changes to the pygame window and addresses some pygame limitations."""
@@ -183,6 +198,12 @@ class View:
             tree, None, dpi, background_color=self.window_config.background_color
         ).cairo
         return self._surface_to_npim(surf)
+
+
+def get_screen_size():
+    screen_sizes = pygame.display.get_desktop_sizes()
+    assert len(screen_sizes) == 1  # TODO multiple monitors not supported...
+    return screen_sizes[0]
 
 
 def point_in_rect(rect, point):

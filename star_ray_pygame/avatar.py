@@ -16,7 +16,8 @@ from star_ray_xml import XMLState, XMLSensor, Update, Insert, Replace, Delete
 from star_ray.ui import WindowConfiguration
 from star_ray.agent import RoutedActionAgent
 
-from .view import View
+from .view import View, get_screen_size
+from icua2.utils import LOGGER
 
 
 class Avatar(RoutedActionAgent):
@@ -38,7 +39,6 @@ class Avatar(RoutedActionAgent):
             window_config = WindowConfiguration()  # use default values
         self._view = View(window_config=window_config)
         self._state = None
-
         # local callbacks
         self.add_event_callback(WindowFocusEvent, self.on_window_focus_event)
         self.add_event_callback(WindowMoveEvent, self.on_window_move_event)
@@ -68,14 +68,14 @@ class Avatar(RoutedActionAgent):
     def on_key_event(self, event: KeyEvent):
         pass
 
-    def on_window_move_event(self, event: WindowMoveEvent):
-        pass
-
     def on_window_focus_event(self, event: WindowFocusEvent):
         pass
 
+    def on_window_move_event(self, event: WindowMoveEvent):
+        pass  # LOGGER.debug("avatar callback: WINDOW MOVED: %s", event)
+
     def on_window_resize_event(self, event: WindowResizeEvent):
-        pass
+        pass  # LOGGER.debug("avatar callback: WINDOW RESIZED: %s", event)
 
     def get_screen_info(self):
         return self._view.get_screen_info()
@@ -110,6 +110,11 @@ class Avatar(RoutedActionAgent):
                 )
         user_events = self._view.get_events()
         self.__attempt__(user_events)
+        # print(user_events)
         # TODO consider refactoring the view to make use of XMLState
         self._view.update(self._state.get_root()._base)
         self._view.render()
+
+    @staticmethod
+    def get_screen_size():
+        return get_screen_size()
