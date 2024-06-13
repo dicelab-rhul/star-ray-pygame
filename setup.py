@@ -1,8 +1,5 @@
 from setuptools import setup, find_packages  # ,find_namespace_packages
 
-
-from setuptools import setup, find_packages
-
 setup(
     name="star_ray_pygame",
     version="0.0.1",
