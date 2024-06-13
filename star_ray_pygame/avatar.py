@@ -110,7 +110,6 @@ class Avatar(RoutedActionAgent):
                 )
         user_events = self._view.get_events()
         self.__attempt__(user_events)
-        print(user_events)
         # TODO consider refactoring the view to make use of XMLState
         self._view.update(self._state.get_root()._base)
         self._view.render()

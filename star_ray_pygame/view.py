@@ -37,7 +37,9 @@ class View:
         if self._window_config.title:
             pygame.display.set_caption(self._window_config.title)
         self._surface = pygame.Surface(self.window_size)  # surface used to render
-        self._root = None  # root of the svg tree
+        self._root = ET.fromstring(
+            """<svg xmlns="http://www.w3.org/2000/svg"></svg>"""
+        )  # root of the svg tree, defaults to an empty svg
         self._source = None  # source of the svg (required by cairosvg unfortunately)
         self._closed = False
         screen_info = pygame.display.get_desktop_sizes()

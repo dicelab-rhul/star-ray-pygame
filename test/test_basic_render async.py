@@ -1,4 +1,5 @@
-from star_ray_pygame import View, WindowConfiguration
+import asyncio
+from lxml import etree
 from star_ray.event import (
     WindowCloseEvent,
     MouseButtonEvent,
@@ -6,10 +7,8 @@ from star_ray.event import (
     WindowMoveEvent,
     WindowResizeEvent,
 )
-from lxml import etree
-import time
-from typing import Tuple
-import asyncio
+
+from star_ray_pygame import View, WindowConfiguration
 
 
 WIDTH, HEIGHT = 640, 480

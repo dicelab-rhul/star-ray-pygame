@@ -8,7 +8,6 @@ from star_ray.event import (
 )
 from lxml import etree
 import time
-from typing import Tuple
 
 WIDTH, HEIGHT = 640, 480
 SVG = f"""
