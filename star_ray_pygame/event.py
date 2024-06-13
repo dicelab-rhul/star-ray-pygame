@@ -1,7 +1,6 @@
-""" TODO """
+"""Defines functions to create `star_ray` events from pygame events."""
 
-# pylint: disable=no-member
-
+# pylint: disable=E1101
 import pygame
 from pygame.event import EventType
 
@@ -16,7 +15,7 @@ from star_ray.event import (
     WindowFocusEvent,
 )
 
-# constant values
+# Constant values
 PYGAME_KEYDOWN = pygame.KEYDOWN
 PYGAME_KEYUP = pygame.KEYUP
 PYGAME_QUIT = pygame.QUIT
@@ -27,7 +26,7 @@ PYGAME_WINDOWRESIZE = pygame.VIDEORESIZE
 PYGAME_WINDOWMOVE = pygame.USEREVENT + 1
 PYGAME_WINDOWFOCUS = pygame.USEREVENT + 2
 PYGAME_WINDOWOPEN = pygame.USEREVENT + 3
-PYGAME_WINDOWCLOSE = PYGAME_QUIT  # alias for PYGAME_QUIT
+PYGAME_WINDOWCLOSE = PYGAME_QUIT  # Alias for PYGAME_QUIT
 
 PYGAME_LEFTMOUSEBUTTON = 1
 PYGAME_MIDDLEMOUSEBUTTON = 2
@@ -42,18 +41,8 @@ MOUSE_BUTTON_MAP = {
 
 def create_window_move_event_from_pygame_event(
     pygame_event: EventType,
-):
-    """Creates a `WindowMoveEvent` from a `pygame` event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event.
-
-    Returns:
-        `WindowMoveEvent`: The `WindowMoveEvent` instance.
-
-    Raises:
-        `ValueError`: If the `pygame` event type does not match `PYGAME_WINDOWMOVE`.
-    """
+) -> WindowMoveEvent:
+    """Creates a `WindowMoveEvent` from a `pygame` window move event."""
     if pygame_event.type != PYGAME_WINDOWMOVE:
         raise ValueError(
             "The provided pygame event is not a `PYGAME_WINDOWMOVE` event."
@@ -63,18 +52,8 @@ def create_window_move_event_from_pygame_event(
 
 def create_window_focus_event_from_pygame_event(
     pygame_event: EventType,
-):
-    """Creates a `WindowFocusEvent` from a `pygame` event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event.
-
-    Returns:
-        `WindowFocusEvent`: The `WindowFocusEvent` instance.
-
-    Raises:
-        `ValueError`: If the `pygame` event type does not match `PYGAME_WINDOWFOCUS`.
-    """
+) -> WindowFocusEvent:
+    """Creates a `WindowFocusEvent` from a `pygame` window focus event."""
     if pygame_event.type != PYGAME_WINDOWFOCUS:
         raise ValueError(
             "The provided pygame event is not a `PYGAME_WINDOWFOCUS` event."
@@ -84,18 +63,8 @@ def create_window_focus_event_from_pygame_event(
 
 def create_window_resize_event_from_pygame_event(
     pygame_event: EventType,
-):
-    """Creates a `WindowResizeEvent` from a `pygame` event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event.
-
-    Returns:
-        `WindowResizeEvent`: The `WindowResizeEvent` instance.
-
-    Raises:
-        `ValueError`: If the `pygame` event type does not match `PYGAME_WINDOWRESIZE`.
-    """
+) -> WindowResizeEvent:
+    """Creates a `WindowResizeEvent` from a `pygame` window resize event."""
     if pygame_event.type != PYGAME_WINDOWRESIZE:
         raise ValueError(
             "The provided pygame event is not a `PYGAME_WINDOWRESIZE` event."
@@ -103,35 +72,19 @@ def create_window_resize_event_from_pygame_event(
     return WindowResizeEvent(size=tuple(pygame_event.size))
 
 
-def create_window_close_event_from_pygame_event(pygame_event: EventType):
-    """Creates an `WindowCloseEvent` from a `pygame` event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event.
-
-    Returns:
-        `WindowCloseEvent`: The `WindowCloseEvent` instance.
-
-    Raises:
-        `ValueError`: If the `pygame` event type does not match `PYGAME_QUIT`.
-    """
+def create_window_close_event_from_pygame_event(
+    pygame_event: EventType,
+) -> WindowCloseEvent:
+    """Creates an `WindowCloseEvent` from a `pygame` window close event."""
     if pygame_event.type != PYGAME_QUIT:
         raise ValueError("The provided pygame event is not a `PYGAME_QUIT` event.")
     return WindowCloseEvent()
 
 
-def create_window_open_event_from_pygame_event(pygame_event: EventType):
-    """Creates an `WindowOpenEvent` from a `pygame` event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event.
-
-    Returns:
-        `WindowOpenEvent`: The `WindowOpenEvent` instance.
-
-    Raises:
-        `ValueError`: If the `pygame` event type does not match `PYGAME_QUIT`.
-    """
+def create_window_open_event_from_pygame_event(
+    pygame_event: EventType,
+) -> WindowOpenEvent:
+    """Creates an `WindowOpenEvent` from a `pygame` window open event."""
     if pygame_event.type != PYGAME_WINDOWOPEN:
         raise ValueError(
             "The provided pygame event is not a `PYGAME_WINDOWOPEN` event."
@@ -139,84 +92,48 @@ def create_window_open_event_from_pygame_event(pygame_event: EventType):
     return WindowOpenEvent()
 
 
-def create_key_event_from_pygame_event(pygame_event):
-    """Creates a `KeyEvent` instance from a `pygame` keyboard event.
-
-    Args:
-        `pygame_event` (`pygame.event.Event`): The `pygame` event from which to create the `KeyEvent`.
-    Returns:
-        `KeyEvent`: A new instance of `KeyEvent` initialized with the `pygame` event data.
-
-    Raises:
-        `ValueError`: If the provided `pygame` event is not a `KEYDOWN` or `KEYUP` event.
-    """
+def create_key_event_from_pygame_event(pygame_event: EventType) -> KeyEvent:
+    """Creates a `KeyEvent` instance from a `pygame` keyboard event."""
     if pygame_event.type not in (PYGAME_KEYDOWN, PYGAME_KEYUP):
         raise ValueError(
-            "The provided pygame event is not a `PYGAME_KEYDOWN` or `PYGAME_KEYUP` event."
+            "The provided pygame event is not a `KEYDOWN` or `KEYUP` event."
         )
     status = KeyEvent.DOWN if pygame_event.type == PYGAME_KEYDOWN else KeyEvent.UP
     return KeyEvent(
-        key=pygame.key.name(pygame_event.key),
-        keycode=pygame_event.key,
-        status=status,
+        key=pygame.key.name(pygame_event.key), keycode=pygame_event.key, status=status
     )
 
 
-def create_mouse_button_event_from_pygame_event(pygame_event):
-    """
-    Creates a `MouseButtonEvent` instance from a `pygame` mouse event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event from which to create the `MouseButtonEvent`.
-
-    Returns:
-        `MouseButtonEvent`: A new instance of `MouseButtonEvent` initialized with the `pygame` event data.
-
-    Raises:
-        `ValueError`: If the provided `pygame` event is not a `PYGAME_MOUSEDOWN` or `PYGAME_MOUSEUP` event.
-    """
+def create_mouse_button_event_from_pygame_event(
+    pygame_event: EventType,
+) -> MouseButtonEvent:
+    """Creates a `MouseButtonEvent` instance from a `pygame` mouse event."""
     if pygame_event.type not in (PYGAME_MOUSEDOWN, PYGAME_MOUSEUP):
         raise ValueError(
-            f"The provided pygame event is not a `PYGAME_MOUSEDOWN` or `PYGAME_MOUSEUP` event."
+            "The provided pygame event is not a `MOUSEDOWN` or `MOUSEUP` event."
         )
-
     status = (
         MouseButtonEvent.DOWN
         if pygame_event.type == PYGAME_MOUSEDOWN
         else MouseButtonEvent.UP
     )
-
     return MouseButtonEvent(
         button=MOUSE_BUTTON_MAP[pygame_event.button],
         position=pygame_event.pos,
         status=status,
-        target=[],
     )
 
 
-def create_mouse_motion_event_from_pygame_event(pygame_event):
-    """
-    Creates a `MouseMotionEvent` instance from a `pygame` mouse movement event.
-
-    Args:
-        `pygame_event` (`pygame.event.EventType`): The `pygame` event from which to create the `MouseMotionEvent`.
-
-    Returns:
-        `MouseMotionEvent`: A new instance of `MouseMotionEvent` initialized with the `pygame` event data.
-
-    Raises:
-        `ValueError`: If the provided `pygame` event is not a `pyame.MOUSEMOTION` event.
-    """
+def create_mouse_motion_event_from_pygame_event(
+    pygame_event: EventType,
+) -> MouseMotionEvent:
+    """Creates a `MouseMotionEvent` instance from a `pygame` mouse movement event."""
     if pygame_event.type != PYGAME_MOUSEMOTION:
-        raise ValueError(
-            f"The provided pygame event is not a `PYGAME_MOUSEMOTION` event."
-        )
-    # TODO target...
-    return MouseMotionEvent(
-        position=pygame_event.pos, relative=pygame_event.rel, target=[]
-    )
+        raise ValueError("The provided pygame event is not a `MOUSEMOTION` event.")
+    return MouseMotionEvent(position=pygame_event.pos, relative=pygame_event.rel)
 
 
+# Dictionary mapping pygame event types to corresponding event creation functions
 EVENT_MAP = {
     PYGAME_KEYDOWN: create_key_event_from_pygame_event,
     PYGAME_KEYUP: create_key_event_from_pygame_event,

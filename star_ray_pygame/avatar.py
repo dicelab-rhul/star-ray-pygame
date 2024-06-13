@@ -1,5 +1,7 @@
+""" TODO """
+
 from typing import List, Type, Callable
-from star_ray import Agent, Sensor, Actuator
+from star_ray import Sensor, Actuator
 from star_ray.event import (
     Event,
     ActiveObservation,

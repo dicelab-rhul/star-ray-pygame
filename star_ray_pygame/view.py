@@ -30,9 +30,10 @@ class View:
             flags |= pygame.RESIZABLE  # pylint: disable=no-member
         if window_config.fullscreen:
             flags |= pygame.FULLSCREEN  # pylint: disable=no-member
-        print("initial window_size:", self.window_size)
-        self._window = pygame.display.set_mode(self.window_size, flags=flags)
         self._window_flags = flags
+        self._window = pygame.display.set_mode(
+            self.window_size, flags=self._window_flags
+        )
         if self._window_config.title:
             pygame.display.set_caption(self._window_config.title)
         self._surface = pygame.Surface(self.window_size)  # surface used to render
@@ -120,7 +121,9 @@ class View:
             # NOTE: resizing using set_mode will break pywinctl watch dog because a new window is created
             # be careful using pygame.display.set_mode in this class!
             width, height = int(math.ceil(value[0])), int(math.ceil(value[1]))
-            self._window = pygame.display.set_mode((width, height))
+            self._window = pygame.display.set_mode(
+                (width, height), flags=self._window_flags
+            )
             # pygame creates a new window... pwc needs to find it again
             self._pwc_window = self._setup_pwc_window()
             self._window_config.width = width
@@ -128,9 +131,7 @@ class View:
             self._surface = pygame.Surface((width, height))
 
     def _window_open_callback(self):
-        """Callback for when the pygame window is opened for the first time. A custom pygame event is added to the queue internally.
-        The associated event timestamp is not accurate, but the event serves as an indication of when this view is ready to for updating/rendering.
-        """
+        """Callback for when the pygame window is opened for the first time. A custom pygame event is added to the queue internally. The associated event timestamp is not accurate, but the event serves as an indication of when this view is ready to for updating/rendering."""
         pygame.event.post(pygame.event.Event(PYGAME_WINDOWOPEN))
 
     def _window_focus_callback(self, has_focus):
