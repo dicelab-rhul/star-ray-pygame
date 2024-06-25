@@ -2,22 +2,22 @@
 
 from typing import List, Type, Callable
 from star_ray import Sensor, Actuator
-from star_ray.event import (
-    Event,
-    ActiveObservation,
-    WindowFocusEvent,
-    WindowMoveEvent,
-    WindowResizeEvent,
-    MouseButtonEvent,
-    MouseMotionEvent,
-    KeyEvent,
-)
+from star_ray.event import Event, ActiveObservation
 from star_ray_xml import XMLState, XMLSensor, Update, Insert, Replace, Delete
 from star_ray.ui import WindowConfiguration
 from star_ray.agent import RoutedActionAgent
 
 from .view import View, get_screen_size
-from icua2.utils import LOGGER
+from .event import (
+    WindowFocusEvent,
+    WindowMoveEvent,
+    WindowResizeEvent,
+    WindowCloseEvent,
+    WindowOpenEvent,
+    MouseButtonEvent,
+    MouseMotionEvent,
+    KeyEvent,
+)
 
 
 class Avatar(RoutedActionAgent):

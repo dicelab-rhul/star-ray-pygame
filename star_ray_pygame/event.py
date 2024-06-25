@@ -2,9 +2,24 @@ from typing import Tuple
 from star_ray.event import (
     MouseButtonEvent as _MouseButtonEvent,
     MouseMotionEvent as _MouseMotionEvent,
+    KeyEvent,
+    WindowCloseEvent,
+    WindowFocusEvent,
+    WindowMoveEvent,
+    WindowOpenEvent,
+    WindowResizeEvent,
 )
 
-__all__ = ("MouseButtonEvent", "MouseMotionEvent")
+__all__ = (
+    "MouseButtonEvent",
+    "MouseMotionEvent",
+    "KeyEvent",
+    "WindowCloseEvent",
+    "WindowFocusEvent",
+    "WindowMoveEvent",
+    "WindowOpenEvent",
+    "WindowResizeEvent",
+)
 
 
 class MouseButtonEvent(_MouseButtonEvent):

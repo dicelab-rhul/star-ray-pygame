@@ -24,6 +24,7 @@ from star_ray.event import (
     WindowMoveEvent,
     WindowFocusEvent,
 )
+from star_ray.utils import _LOGGER
 
 from .event import MouseButtonEvent, MouseMotionEvent
 
@@ -145,8 +146,7 @@ class CairoSVGSurface:
     def render(self, window: pygame.Surface, background_color="#ffffff"):
         # center the svg in the window
         self._window_size = window.get_size()
-
-        array = self._svg_to_npim(self._svg_source, background_color="#00ffff")
+        array = self._svg_to_npim(self._svg_source, background_color=background_color)
         pygame.surfarray.blit_array(self._surface, array)
         window.fill(background_color)
         window.blit(self._surface, self.surface_position)
@@ -208,12 +208,6 @@ class CairoSVGSurface:
         """
         if transform:
             point = self.pixel_to_svg(point)
-        # TODO below check is not needed? `elements_under` will check if the point is in the root svg...
-        # p = self._svg_position
-        # s = self._svg_size
-        # ps = (p[0] + s[0], p[1] + s[1])
-        # if point[0] < p[0] or point[1] < p[1] or point[0] > ps[0] or point[1] > ps[1]:
-        #     return []  # out of bounds of the svg
         return elements_under(self._svg_tree, point)
 
 
@@ -303,7 +297,14 @@ class View:
         for pg_event in pygame.event.get():
             fun = EVENT_MAP.get(pg_event.type, None)
             if fun:
-                events.append(fun(self, pg_event))
+                try:
+                    events.append(fun(self, pg_event))
+                except Exception as e:  # pylint: disable=W0718
+                    _LOGGER.exception(
+                        "Failed to convert `pygame` event: %s  to `star_ray` event as an error occured: %s",
+                        pg_event,
+                        e,
+                    )
         return events
 
     @property
