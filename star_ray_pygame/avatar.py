@@ -2,7 +2,7 @@
 
 from typing import List, Type, Callable
 from star_ray import Sensor, Actuator
-from star_ray.event import Event, ActiveObservation
+from star_ray.event import Event, ActiveObservation, ErrorObservation
 from star_ray_xml import XMLState, XMLSensor, Update, Insert, Replace, Delete
 from star_ray.ui import WindowConfiguration
 from star_ray.agent import RoutedActionAgent
@@ -43,6 +43,8 @@ class Avatar(RoutedActionAgent):
         self.add_event_callback(WindowFocusEvent, self.on_window_focus_event)
         self.add_event_callback(WindowMoveEvent, self.on_window_move_event)
         self.add_event_callback(WindowResizeEvent, self.on_window_resize_event)
+        self.add_event_callback(WindowCloseEvent, self.on_window_close_event)
+        self.add_event_callback(WindowOpenEvent, self.on_window_open_event)
         self.add_event_callback(MouseButtonEvent, self.on_mouse_button_event)
         self.add_event_callback(MouseMotionEvent, self.on_mouse_motion_event)
         self.add_event_callback(KeyEvent, self.on_key_event)
@@ -58,6 +60,12 @@ class Avatar(RoutedActionAgent):
     ):
         cls_name = RoutedActionAgent.get_fully_qualified_name(event_type)
         self._action_router_map[cls_name].remove(callback)
+
+    def on_window_open_event(self, event: WindowOpenEvent):
+        pass
+
+    def on_window_close_event(self, event: WindowCloseEvent):
+        pass
 
     def on_mouse_button_event(self, event: MouseButtonEvent):
         pass
@@ -83,11 +91,16 @@ class Avatar(RoutedActionAgent):
     def get_window_info(self):
         return self._view.get_window_info()
 
+    def on_error_observation(self, observation: ErrorObservation):
+        raise observation.exception()
+
     def __cycle__(self):
         # TODO support additional sensors?
         # assert set([self._xml_sensor]) == set(self.sensors)
         for observation in self._xml_sensor.iter_observations():
-            if isinstance(observation, ActiveObservation):
+            if isinstance(observation, ErrorObservation):
+                self.on_error_observation(observation)
+            elif isinstance(observation, ActiveObservation):
                 assert self._state is None
                 assert len(observation.values) == 1
                 self._state = XMLState(observation.values[0])
@@ -110,10 +123,13 @@ class Avatar(RoutedActionAgent):
                 )
         user_events = self._view.get_events()
         self.__attempt__(user_events)
-        # print(user_events)
         # TODO consider refactoring the view to make use of XMLState
         self._view.update(self._state.get_root()._base)
         self._view.render()
+        for actuator in self.get_actuators():
+            for observation in actuator.iter_observations():
+                if isinstance(observation, ErrorObservation):
+                    self.on_error_observation(observation)
 
     @staticmethod
     def get_screen_size():

@@ -152,12 +152,13 @@ class CairoSVGSurface:
         window.blit(self._surface, self.surface_position)
         pygame.display.flip()
 
-    def _surface_to_npim(self, surface):
+    def _surface_to_npim(self, surface: cairosvg.surface.PNGSurface):
         """Transforms a Cairo surface into a numpy array."""
-        im = np.frombuffer(surface.get_data(), np.uint8)
-        H, W = surface.get_height(), surface.get_width()
-        im.shape = (H, W, 4)  # for RGBA
         # a copy must be made to avoid a seg fault if the backing array disappears... (not sure why this happens!)
+        surface = surface.cairo
+        H, W = surface.get_height(), surface.get_width()
+        im = np.frombuffer(surface.get_data(), np.uint8)
+        im.shape = (H, W, 4)  # for RGBA
         im = im[:, :, :3].transpose(1, 0, 2)[:, :, ::-1].copy()
         return im
 
@@ -191,8 +192,8 @@ class CairoSVGSurface:
             (sur_size[0] - (svg_size[0] * self._scaling_factor)) / 2,
             (sur_size[1] - (svg_size[1] * self._scaling_factor)) / 2,
         )
-        surf.finish()
-        return self._surface_to_npim(surf.cairo)
+        # surf.finish()
+        return self._surface_to_npim(surf)
 
     def elements_under(
         self, point: Tuple[float, float], transform: bool = False
@@ -518,19 +519,6 @@ def elements_under(node, point: Tuple[float, float]):
             result.extend(elements_under(child, tpoint))
         return result
     return []
-
-
-# TODO this is temporary, it should be done in `fun` when creating the event, fun should contain an argument that is this `View`
-# try:
-#     if hasattr(event, "target"):
-#         print(self._surface.pixel_to_svg(event.position))
-#         event.target = self._surface.elements_under(event.position)
-# except Exception as e:
-#     _LOGGER.exception(
-#         "Failed to find targets for event: %s as an error occured: %s",
-#         event,
-#         e,
-#     )
 
 
 def create_window_move_event_from_pygame_event(
