@@ -1,4 +1,7 @@
-""" This package defines the PygameSVGEngine class. """
+""" Defines the pygame view that is used to render SVG """
+
+from .utils import _check_libcairo_install
+_check_libcairo_install() # this will check for install issues with cairo, its a real pain on windows...
 
 # pylint: disable=E1101
 from typing import Any, List, Tuple
