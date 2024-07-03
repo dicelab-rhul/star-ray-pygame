@@ -11,7 +11,7 @@ from setuptools import setup, find_packages  # ,find_namespace_packages
 
 setup(
     name="star_ray_pygame",
-    version="0.0.2",
+    version="0.0.3",
     author="Benedict Wilkins",
     author_email="benrjw@gmail.com",
     description="An optional extra for the `star_ray` package that supports `pygame` as a UI backend.",
