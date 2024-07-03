@@ -1,23 +1,7 @@
 """ Defines the pygame view that is used to render SVG """
 
-from .utils import _check_libcairo_install
-_check_libcairo_install() # this will check for install issues with cairo, its a real pain on windows...
-
-# pylint: disable=E1101
-from typing import Any, List, Tuple
-import math
-import copy
-import re
-import time
-import pygame
-import cairosvg
-import numpy as np
-import pywinctl as pwc  # pylint: disable = E0401
-
-from pygame.event import EventType
-from lxml import etree as ET
-from star_ray.ui import WindowConfiguration
-
+from .event import MouseButtonEvent, MouseMotionEvent
+from star_ray.utils import _LOGGER
 from star_ray.event import (
     Event,
     KeyEvent,
@@ -27,9 +11,23 @@ from star_ray.event import (
     WindowMoveEvent,
     WindowFocusEvent,
 )
-from star_ray.utils import _LOGGER
+from star_ray.ui import WindowConfiguration
+from lxml import etree as ET
+from pygame.event import EventType
+import pywinctl as pwc  # pylint: disable = E0401
+import numpy as np
+import cairosvg
+import pygame
+import time
+import re
+import copy
+import math
+from typing import Any, List, Tuple
+from .utils import _check_libcairo_install
+# this will check for install issues with cairo, its a real pain on windows...
+_check_libcairo_install()
 
-from .event import MouseButtonEvent, MouseMotionEvent
+# pylint: disable=E1101
 
 
 # Constant values
@@ -101,7 +99,8 @@ class CairoSVGSurface:
     def surface_position(self):
         # compute the surface position based on svg position and scaling factor
         p = self._svg_position
-        surface_position = (p[0] * self.scaling_factor, p[1] * self.scaling_factor)
+        surface_position = (p[0] * self.scaling_factor,
+                            p[1] * self.scaling_factor)
         # center the surface in the window
         surface_size = self.surface_size
         window_size = self._window_size
@@ -149,7 +148,8 @@ class CairoSVGSurface:
     def render(self, window: pygame.Surface, background_color="#ffffff"):
         # center the svg in the window
         self._window_size = window.get_size()
-        array = self._svg_to_npim(self._svg_source, background_color=background_color)
+        array = self._svg_to_npim(
+            self._svg_source, background_color=background_color)
         pygame.surfarray.blit_array(self._surface, array)
         window.fill(background_color)
         window.blit(self._surface, self.surface_position)
@@ -351,11 +351,13 @@ class View:
 
     def _window_focus_callback(self, has_focus):
         """Callback for `pywinctl` when the pygame window losses or gains focus. A custom pygame event is added to the queue internally."""
-        pygame.event.post(pygame.event.Event(PYGAME_WINDOWFOCUS, has_focus=has_focus))
+        pygame.event.post(pygame.event.Event(
+            PYGAME_WINDOWFOCUS, has_focus=has_focus))
 
     def _window_moved_callback(self, position):
         """Callback for `pywinctl` when the pygame window is moved. A custom pygame event is added to the queue internally."""
-        pygame.event.post(pygame.event.Event(PYGAME_WINDOWMOVE, position=position))
+        pygame.event.post(pygame.event.Event(
+            PYGAME_WINDOWMOVE, position=position))
 
     def _window_resize_callback(self, size):
         """Callback for `pywinctl` when the pygame window is resized. A custom pygame event is added to the queue internally."""
@@ -452,7 +454,8 @@ def parse_transform(transform: str):
     rotation_match = re.search(r"rotate\(([^)]+)\)", transform)
     translate_match = re.search(r"translate\(([^)]+)\)", transform)
 
-    scale = tuple(map(float, scale_match.group(1).split(","))) if scale_match else None
+    scale = tuple(map(float, scale_match.group(1).split(","))
+                  ) if scale_match else None
     rotation = (
         tuple(map(float, rotation_match.group(1).split(",")))
         if rotation_match
@@ -566,7 +569,8 @@ def create_window_close_event_from_pygame_event(
 ) -> WindowCloseEvent:
     """Creates an `WindowCloseEvent` from a `pygame` window close event."""
     if pygame_event.type != PYGAME_QUIT:
-        raise ValueError("The provided pygame event is not a `PYGAME_QUIT` event.")
+        raise ValueError(
+            "The provided pygame event is not a `PYGAME_QUIT` event.")
     return WindowCloseEvent()
 
 
@@ -627,7 +631,8 @@ def create_mouse_motion_event_from_pygame_event(
 ) -> MouseMotionEvent:
     """Creates a `MouseMotionEvent` instance from a `pygame` mouse movement event."""
     if pygame_event.type != PYGAME_MOUSEMOTION:
-        raise ValueError("The provided pygame event is not a `MOUSEMOTION` event.")
+        raise ValueError(
+            "The provided pygame event is not a `MOUSEMOTION` event.")
 
     position_raw = pygame_event.pos
     relative_raw = pygame_event.rel

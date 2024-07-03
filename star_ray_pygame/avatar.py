@@ -18,6 +18,7 @@ from .event import (
     MouseMotionEvent,
     KeyEvent,
 )
+from .utils import LOGGER
 
 
 class Avatar(RoutedActionAgent):
@@ -32,7 +33,8 @@ class Avatar(RoutedActionAgent):
     ):
         actuators = actuators if actuators else []
         sensors = sensors if sensors else []
-        self._xml_sensor = XMLSensor(subscriptions=(Update, Insert, Replace, Delete))
+        self._xml_sensor = XMLSensor(
+            subscriptions=(Update, Insert, Replace, Delete))
         sensors.append(self._xml_sensor)
         super().__init__(sensors, actuators, *args, **kwargs)
         if not window_config:
@@ -62,28 +64,28 @@ class Avatar(RoutedActionAgent):
         self._action_router_map[cls_name].remove(callback)
 
     def on_window_open_event(self, event: WindowOpenEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_window_close_event(self, event: WindowCloseEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_mouse_button_event(self, event: MouseButtonEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_mouse_motion_event(self, event: MouseMotionEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_key_event(self, event: KeyEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_window_focus_event(self, event: WindowFocusEvent):
-        pass
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_window_move_event(self, event: WindowMoveEvent):
-        pass  # LOGGER.debug("avatar callback: WINDOW MOVED: %s", event)
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def on_window_resize_event(self, event: WindowResizeEvent):
-        pass  # LOGGER.debug("avatar callback: WINDOW RESIZED: %s", event)
+        LOGGER.debug(f"%s@%s", type(self), event)
 
     def get_screen_info(self):
         return self._view.get_screen_info()
@@ -122,6 +124,7 @@ class Avatar(RoutedActionAgent):
                     f"Recieve observation of unknown type: {type(observation)}"
                 )
         user_events = self._view.get_events()
+        # NOTE: there will on be a single MouseMotionEvent produced by pygame on each call to get_events.
         self.__attempt__(user_events)
         # TODO consider refactoring the view to make use of XMLState
         self._view.update(self._state.get_root()._base)

@@ -1,15 +1,23 @@
 from star_ray_pygame import View, WindowConfiguration
 from star_ray_xml import XMLAmbient
 from star_ray.event import (
-    WindowCloseEvent,
     MouseButtonEvent,
+    MouseMotionEvent,
+    KeyEvent,
+    WindowCloseEvent,
+    WindowOpenEvent,
     WindowFocusEvent,
     WindowMoveEvent,
     WindowResizeEvent,
 )
+from star_ray.agent import Actuator, attempt
 from star_ray import Environment
 
 from star_ray_pygame.avatar import Avatar
+
+from star_ray_pygame.utils import LOGGER
+import logging
+LOGGER.setLevel(logging.INFO)
 
 WIDTH, HEIGHT = 640, 480
 NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}
@@ -39,21 +47,23 @@ window_config = WindowConfiguration(
     width=WIDTH, height=HEIGHT, title="svg test", resizable=True, fullscreen=False
 )
 
-avatar = Avatar([], [], window_config=window_config)
-ambient = XMLAmbient([avatar], xml=SVG, namespaces=NAMESPACES)
-environment = Environment(ambient)
-environment.run()
 
-# running = True
-# while running:
-#     events = view.get_events()
-#     # time.sleep(0.1)
-#     for event in events:
-#         if isinstance(event, WindowCloseEvent):
-#             running = False
-#         elif isinstance(event, MouseButtonEvent):
-#             print(event)
-#         elif isinstance(event, (WindowFocusEvent, WindowMoveEvent, WindowResizeEvent)):
-#             print("window event:", event)
-#             view.render()
-#     view.render()
+class MyAmbient(XMLAmbient):
+
+    def __update__(self, action):
+        if isinstance(action, WindowCloseEvent):
+            self._is_alive = False  # trigger shutdown
+        super().__update__(action)
+
+
+class DefaultActuator(Actuator):
+    @attempt(route_events=[MouseButtonEvent, MouseMotionEvent, KeyEvent, WindowCloseEvent,
+                           WindowOpenEvent, WindowFocusEvent, WindowMoveEvent, WindowResizeEvent])
+    def attempt(self, action):
+        return action
+
+
+avatar = Avatar([], [DefaultActuator()], window_config=window_config)
+ambient = MyAmbient([avatar], xml=SVG, namespaces=NAMESPACES)
+environment = Environment(ambient, wait=0.1)
+environment.run()
