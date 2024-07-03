@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     url="https://github.com/dicelab-rhul/star_ray_pygame",
     install_requires=[
-        "star_ray[xml]==0.0.2",
+        "star_ray[xml]==0.0.3",
         "pygame",
         "pywinctl",
         "lxml",
