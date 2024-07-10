@@ -9,17 +9,7 @@ from star_ray.event import (
     WindowOpenEvent,
     WindowResizeEvent,
 )
-
-__all__ = (
-    "MouseButtonEvent",
-    "MouseMotionEvent",
-    "KeyEvent",
-    "WindowCloseEvent",
-    "WindowFocusEvent",
-    "WindowMoveEvent",
-    "WindowOpenEvent",
-    "WindowResizeEvent",
-)
+from star_ray_xml import XMLQuery, XPathQuery, Update, Select, Insert, Delete, Replace
 
 
 class MouseButtonEvent(_MouseButtonEvent):
@@ -31,3 +21,29 @@ class MouseMotionEvent(_MouseMotionEvent):
 
     position_raw: Tuple[float, float] | Tuple[int, int]
     relative_raw: Tuple[float, float] | Tuple[int, int]
+
+
+MouseEvent = MouseButtonEvent | MouseMotionEvent
+WindowEvent = WindowCloseEvent | WindowOpenEvent | WindowFocusEvent | WindowMoveEvent | WindowResizeEvent
+UserInputEvent = MouseEvent | KeyEvent | WindowEvent
+
+__all__ = (
+    "UserInputEvent",
+    "MouseEvent",
+    "WindowEvent",
+    "MouseButtonEvent",
+    "MouseMotionEvent",
+    "KeyEvent",
+    "WindowCloseEvent",
+    "WindowFocusEvent",
+    "WindowMoveEvent",
+    "WindowOpenEvent",
+    "WindowResizeEvent",
+    "XMLQuery",
+    "XPathQuery",
+    "Update",
+    "Select",
+    "Insert",
+    "Delete",
+    "Replace",
+)

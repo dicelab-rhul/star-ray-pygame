@@ -1,23 +1,11 @@
-from star_ray_pygame import View, WindowConfiguration
-from star_ray_xml import XMLAmbient
-from star_ray.event import (
-    MouseButtonEvent,
-    MouseMotionEvent,
-    KeyEvent,
-    WindowCloseEvent,
-    WindowOpenEvent,
-    WindowFocusEvent,
-    WindowMoveEvent,
-    WindowResizeEvent,
-)
-from star_ray.agent import Actuator, attempt
+from star_ray_pygame import Ambient, WindowConfiguration
 from star_ray import Environment
-
 from star_ray_pygame.avatar import Avatar
-
+from star_ray_pygame.actuator import DefaultActuator
 from star_ray_pygame.utils import LOGGER
+
 import logging
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
 
 WIDTH, HEIGHT = 640, 480
 NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}
@@ -48,22 +36,7 @@ window_config = WindowConfiguration(
 )
 
 
-class MyAmbient(XMLAmbient):
-
-    def __update__(self, action):
-        if isinstance(action, WindowCloseEvent):
-            self._is_alive = False  # trigger shutdown
-        super().__update__(action)
-
-
-class DefaultActuator(Actuator):
-    @attempt(route_events=[MouseButtonEvent, MouseMotionEvent, KeyEvent, WindowCloseEvent,
-                           WindowOpenEvent, WindowFocusEvent, WindowMoveEvent, WindowResizeEvent])
-    def attempt(self, action):
-        return action
-
-
 avatar = Avatar([], [DefaultActuator()], window_config=window_config)
-ambient = MyAmbient([avatar], xml=SVG, namespaces=NAMESPACES)
+ambient = Ambient([avatar], svg=SVG, namespaces=NAMESPACES)
 environment = Environment(ambient, wait=0.1)
 environment.run()

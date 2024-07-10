@@ -3,6 +3,7 @@ import os
 import sys
 from star_ray.utils import _LOGGER as LOGGER
 
+
 def _check_libcairo_install():
     WINDOW_NAME = "nt"
     ON_WINDOWS = os.name == WINDOW_NAME
