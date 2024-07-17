@@ -9,7 +9,7 @@ from star_ray_pygame.utils import LOGGER
 from star_ray_xml import insert, update
 import logging
 
-LOGGER.setLevel(logging.INFO)
+LOGGER.setLevel(logging.DEBUG)
 
 WIDTH, HEIGHT = 640, 480
 NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}

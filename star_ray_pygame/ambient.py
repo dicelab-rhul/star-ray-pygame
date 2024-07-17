@@ -162,18 +162,19 @@ class SVGAmbient(XMLAmbient):
             ActiveObservation | ErrorActiveObservation: the resulting observation
         """
         try:
+            result = None
             if isinstance(action, XMLQuery):
                 result = super().__update__(action)
                 self.on_xml_event(action)
-                return result
             elif isinstance(action, self._user_input_types):
-                self.on_user_input_event(action)
+                result = self.on_user_input_event(action)
             else:
-                self.on_unknown_event(action)
+                result = self.on_unknown_event(action)
             # exit on close?
             if isinstance(action, WindowCloseEvent):
                 self.on_exit_event(action)
             # publish the action for any that wish to see it
             self._publisher.publish(action)
+            return result
         except Exception as e:
             return ErrorActiveObservation.from_exception(action, e)

@@ -84,17 +84,21 @@ class Avatar(AgentRouted):
             component (Component): component that the observation originated from
         """
         if isinstance(component, XMLSensor):
-            # TODO we can do some checks to determine whether this is infact the first observation...
-            # otherwise, this should only called on the first cycle to set the initialise xml state
-            assert self._state is None
-            assert len(observation.values) == 1
-            self._state = _XMLState(observation.values[0])
-            # TODO this is a bit of a hack, it assumes all namespaces are defined in the root, which may not be the case.
-            # TODO make an official note of this, or create an action that can get the actual namespaces from the environment...?
-            self._state._namespaces = self._state.get_root().nsmap
+            if observation.values:
+                # TODO we can do some checks to determine whether this is infact the first observation...
+                # otherwise, this should only called on the first cycle to set the initialise xml state
+                assert self._state is None
+                assert len(observation.values) == 1
+                self._state = _XMLState(observation.values[0])
+                # TODO this is a bit of a hack, it assumes all namespaces are defined in the root, which may not be the case.
+                # TODO make an official note of this, or create an action that can get the actual namespaces from the environment...?
+                self._state._namespaces = self._state.get_root().nsmap
+            else:
+                pass  # this is probably the result of a subscription action
 
     @observe
     def _on_xml_change(self, observation: XMLQuery):
+        print("???")
         """Called whenever an `XMLQuery` event is received via the `XMLSensor` attached to this agent, it will update the state of the view."""
         # update view state from xml query
         observation.__execute__(self._state)
