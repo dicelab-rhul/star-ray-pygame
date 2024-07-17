@@ -1,3 +1,5 @@
+"""Setup file."""
+
 from setuptools import setup, find_packages  # ,find_namespace_packages
 
 ####  NOTE: ####
@@ -11,7 +13,7 @@ from setuptools import setup, find_packages  # ,find_namespace_packages
 
 setup(
     name="star_ray_pygame",
-    version="0.0.3",
+    version="0.0.4",
     author="Benedict Wilkins",
     author_email="benrjw@gmail.com",
     description="An optional extra for the `star_ray` package that supports `pygame` as a UI backend.",
@@ -20,7 +22,7 @@ setup(
     packages=find_packages(),
     url="https://github.com/dicelab-rhul/star_ray_pygame",
     install_requires=[
-        "star_ray[xml]>=0.0.3",
+        "star_ray[xml]>=0.0.4",
         "pygame",
         "pywinctl",
         "lxml",
