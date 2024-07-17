@@ -1,13 +1,14 @@
+"""This module defines a simple actuator `AvatarActuator` intended to be used by an `Avatar` that will simply forward any user input to the environment."""
+
 from star_ray.agent import Actuator, attempt
 
 from .event import UserInputEvent
 
-__all__ = ("DefaultActuator",)
+__all__ = ("AvatarActuator",)
 
 
-class DefaultActuator(Actuator):
-    """This simple actuator will automatically foward all user input events (see `star_ray_pygame.UserInputEvent` for a full list) to the environment. This allows other agents to subscribe to receive these events, or for them to be processed by the `Ambient`.
-    """
+class AvatarActuator(Actuator):
+    """This simple actuator will automatically foward all user input events (see `star_ray_pygame.UserInputEvent` for a full list) to the environment. This allows other agents to subscribe to receive these events, or for them to be processed by the `Ambient`."""
 
     @attempt
     def attempt(self, action: UserInputEvent) -> UserInputEvent:

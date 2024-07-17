@@ -1,8 +1,10 @@
+"""Test that runs a simple simulation with an `Avatar`."""
+
 from star_ray_pygame import SVGAmbient, WindowConfiguration
 from star_ray import Environment
 from star_ray_pygame.avatar import Avatar
 from star_ray_pygame.event import MouseButtonEvent
-from star_ray_pygame.actuator import DefaultActuator, attempt
+from star_ray_pygame.actuator import AvatarActuator, attempt
 from star_ray_pygame.utils import LOGGER
 from star_ray_xml import insert, update
 import logging
@@ -22,10 +24,11 @@ window_config = WindowConfiguration(
 )
 
 
-class TestActuator(DefaultActuator):
+class TestActuator(AvatarActuator):
+    """Test Actuator that changes the colour of a circle when clicking left/right mouse."""
 
     @attempt
-    def on_click(self, event: MouseButtonEvent):
+    def on_click(self, event: MouseButtonEvent):  # noqa: D102
         color = ["red", "blue", "yellow"][event.button]
         return update(xpath="/svg:svg/svg:circle", attrs={"fill": color})
 

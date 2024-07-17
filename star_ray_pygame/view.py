@@ -1,6 +1,14 @@
-""" Defines the pygame view that is used to render SVG """
+"""Module that defines the `View` class, this class is used to render SVG in a `pygame` window."""
 
-from .event import MouseButtonEvent, MouseMotionEvent
+from lxml import etree as ET
+from pygame.event import EventType
+from typing import Any
+import pywinctl as pwc  # pylint: disable = E0401
+import pygame
+import time
+import copy
+import math
+
 from star_ray.utils import _LOGGER
 from star_ray.event import (
     Event,
@@ -12,15 +20,8 @@ from star_ray.event import (
     WindowFocusEvent,
 )
 from star_ray.ui import WindowConfiguration
-from lxml import etree as ET
-from pygame.event import EventType
-import pywinctl as pwc  # pylint: disable = E0401
-import pygame
-import time
-import copy
-import math
-from typing import Any, List, Tuple
 
+from .event import MouseButtonEvent, MouseMotionEvent
 from .cairosurface import CairoSVGSurface
 
 # Constant values
@@ -48,10 +49,19 @@ MOUSE_BUTTON_MAP = {
 
 
 class View:
+    """Class that an `Avatar` will use to render SVG in a pygame window and trigger/handle user input events."""
 
     def __init__(
-        self, window_config: WindowConfiguration, surface_size: Tuple[int, int] = None
+        self,
+        window_config: WindowConfiguration,
+        surface_size: tuple[int, int] | None = None,
     ):
+        """Constructor.
+
+        Args:
+            window_config (WindowConfiguration): configuration of the pygame window.
+            surface_size (tuple[int, int], optional): size of the render surface (in pixels). Defaults to None, meaning it will be derived from the supplied window size.
+        """
         pygame.init()  # pylint: disable=no-member
         self._window_config = copy.deepcopy(window_config)
         self._screen_size = get_screen_size()
@@ -90,45 +100,116 @@ class View:
         self._window_resize_callback(window_info["size"])
         self._window_moved_callback(window_info["position"])
 
-    def get_window_info(self):
+    def get_window_info(self) -> dict[str, Any]:
+        """Get information about the display window, including: title, position (on the monitor) and size (in pixels).
+
+        Returns:
+            dict[str,Any]: window information
+        """
         return dict(
             title=self._pwc_window.title,
             position=self._pwc_window.position,
             size=self._pwc_window.size,
         )
 
-    def get_window_aspect(self):
+    def get_window_aspect(self) -> float:
+        """Get the aspect ratio of the window.
+
+        Returns:
+            float: aspect ratio
+        """
         return self.window_size[0] / self.window_size[1]
 
-    def get_screen_info(self):
+    def get_screen_info(self) -> dict[str, Any]:
+        """Get information about the screen (monitor), including the monitor index and size.
+
+        NOTE: Currently only single monitor setups are supported, the monitor index will always be zero.
+
+        Returns:
+            dict[str,Any]: screen information
+        """
         return dict(monitor=0, size=self._screen_size)
 
     def update(self, svg_tree: ET.ElementBase):
+        """Update the internal svg in preparation for rendering. This will typically preceed a call to `View.render`.
+
+        Args:
+            svg_tree (ET.ElementBase): root of the svg tree.
+        """
         self._surface.update(svg_tree)
 
-    def render(self):
+    def render(self) -> None:
+        """Render svg to the window. This will typically follow a call to `View.update`."""
         self._surface.render(self._window)
 
-    def elements_under(self, point: Tuple[float, float], transform: bool = False):
+    def elements_under(
+        self, point: tuple[float, float], transform: bool = False
+    ) -> list[str]:
+        """Gets all svg element `id`s that are under the given `point`.
+
+        Args:
+            point (Tuple[float, float]): to check under
+            transform (bool, optional): whether to transform the given `point` to svg space. Defaults to False.
+
+        Returns:
+            List[str]: list of element ids that are under the `point`.
+        """
         return self._surface.elements_under(point, transform=transform)
 
-    def pixel_to_svg(self, point: Tuple[float, float]) -> Tuple[float, float]:
+    def pixel_to_svg(self, point: tuple[float, float]) -> tuple[float, float]:
+        """Transforms a point from pixel space to svg space.
+
+        Args:
+            point (tuple[float, float]): to transform
+
+        Returns:
+            tuple[float, float]: transformed point
+        """
         return self._surface.pixel_to_svg(point)
 
-    def svg_to_pixel(self, point: Tuple[float, float]) -> Tuple[float, float]:
+    def svg_to_pixel(self, point: tuple[float, float]) -> tuple[float, float]:
+        """Transform a point from svg space to pixel space.
+
+        Args:
+            point (tuple[float, float]): to transform
+
+        Returns:
+            tuple[float, float]: transformed point
+        """
         return self._surface.svg_to_pixel(point)
 
     def pixel_scale_to_svg_scale(
-        self, point: Tuple[float, float]
-    ) -> Tuple[float, float]:
+        self, point: tuple[float, float]
+    ) -> tuple[float, float]:
+        """Scale a point (typically a (width, height) pair or similar) that lies in pixel space to svg space. Only scaling is applied.
+
+        Args:
+            point (tuple[float, float]): point to scale
+
+        Returns:
+            tuple[float, float]: scaled point
+        """
         return self._surface.pixel_scale_to_svg_scale(point)
 
     def svg_scale_to_pixel_scale(
-        self, point: Tuple[float, float]
-    ) -> Tuple[float, float]:
+        self, point: tuple[float, float]
+    ) -> tuple[float, float]:
+        """Scale a point (typically a (width, height) pair or similar) that lies in svg space to pixel space. Only scaling is applied.
+
+        Args:
+            point (tuple[float, float]): point to scale
+
+        Returns:
+            tuple[float, float]: scaled point
+        """
         return self._surface.svg_scale_to_pixel_scale(point)
 
-    def get_events(self) -> List[Event]:
+    def get_events(self) -> list[Event]:
+        """Get all user input events that have happened since the last call to this method. Internally this will poll the `pygame` event loop.
+
+        Returns:
+            list[Event]: user input events.
+        """
         events = []
         for pg_event in pygame.event.get():
             fun = EVENT_MAP.get(pg_event.type, None)
@@ -144,24 +225,45 @@ class View:
         return events
 
     @property
-    def is_open(self):
+    def is_open(self) -> bool:
+        """Is the window currently open?
+
+        Returns:
+            bool: True if the window is open, False otherwise.
+        """
         return not self._closed
 
-    def close(self):
+    def close(self) -> None:
+        """Close the UI - terminate pygame and clean up."""
         self._closed = True
         self._pwc_window.watchdog.stop()
         pygame.quit()  # pylint: disable=no-member
 
     @property
-    def window_config(self):
+    def window_config(self) -> WindowConfiguration:
+        """Get current window configuration. This is a read only quantity, modifying it will have no effect, if you want to change any window property use the relevant `View` attributes.
+
+        Returns:
+            WindowConfiguration: current window configuration.
+        """
         return copy.deepcopy(self._window_config)  # read only!
 
     @property
-    def window_size(self):
+    def window_size(self) -> tuple[int, int]:
+        """Getter for the current window size.
+
+        Returns:
+            tuple[int, int]: current window size
+        """
         return (int(self._window_config.width), int(self._window_config.height))
 
     @window_size.setter
-    def window_size(self, value):
+    def window_size(self, value: tuple[int, int]):
+        """Setter for the window size. This operation is not cheap, it is not advisable to resize the window frequently.
+
+        Args:
+            value (tuple[int,int]): new window size.
+        """
         window_size = (self._window_config.width, self._window_config.height)
         if window_size != value:
             # NOTE: resizing using set_mode will break pywinctl watch dog because a new window is created
@@ -218,6 +320,7 @@ class View:
 
 
 def get_screen_size():
+    """Getter for the screen size. This will typically not change during the course of the simulation."""
     screen_sizes = pygame.display.get_desktop_sizes()
     assert len(screen_sizes) == 1  # TODO multiple monitors not supported...
     return screen_sizes[0]

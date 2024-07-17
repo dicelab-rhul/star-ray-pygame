@@ -1,3 +1,4 @@
+"""Module contain various utilities used in the `star_ray_pygame` package."""
 
 import os
 import sys
@@ -9,16 +10,17 @@ def _check_libcairo_install():
     ON_WINDOWS = os.name == WINDOW_NAME
     if ON_WINDOWS:
         # try to locate GTK installation and add it to path, this is typically not done by default
-        gtkbin = r'C:\Program Files\GTK3-Runtime Win64\bin'
+        gtkbin = r"C:\Program Files\GTK3-Runtime Win64\bin"
         if os.path.exists(gtkbin):
-            os.environ['PATH'] = os.pathsep.join((gtkbin, os.environ['PATH']))
+            os.environ["PATH"] = os.pathsep.join((gtkbin, os.environ["PATH"]))
 
     def _cairosvg_ok():
         try:
-            import cairosvg
+            pass
         except OSError as e:
             return (False, e.args[0])
         return (True, None)
+
     ok, err = _cairosvg_ok()
     if not ok:
         WINDOWS_INSTALL_MESSAGE = """>> On Windows: Please install the latest GTK-3 runtime from: https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases"""

@@ -1,3 +1,5 @@
+"""Tests rendering using the View (without an Avatar) with asyncio, see also `test/test_basic_render.py`."""
+
 import asyncio
 from lxml import etree
 from star_ray.event import (
@@ -31,6 +33,8 @@ window_config = WindowConfiguration(
 
 
 async def main():
+    """Main entry point for asyncio."""
+
     async def task():
         running = True
         view = View(window_config)
@@ -44,7 +48,7 @@ async def main():
                 elif isinstance(event, MouseButtonEvent):
                     print(event)
                 elif isinstance(
-                    event, (WindowFocusEvent, WindowMoveEvent, WindowResizeEvent)
+                    event, WindowFocusEvent | WindowMoveEvent | WindowResizeEvent
                 ):
                     print("window event:", event)
             view.render()

@@ -1,4 +1,6 @@
-from typing import List, Dict, Any, Tuple
+"""The module defines the `SVGAmbient` class which is an extension of `star_ray_xml.XMLAmbient`. This ambient supports pub-sub of XML queries, and contains some useful functionality regarding the handling of SVG data."""
+
+from typing import Any
 from star_ray.event import ActiveObservation, ErrorActiveObservation
 from star_ray.pubsub._action import Subscribe, Unsubscribe
 from star_ray_xml import XMLAmbient, XMLQuery, Update
@@ -11,28 +13,38 @@ from .utils import LOGGER
 
 __all__ = ("SVGAmbient",)
 
-DEFAULT_SVG_NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}
-DEFAULT_SVG = """<svg:svg id="root" x="0" y="0" xmlns:svg="http://www.w3.org/2000/svg"></svg:svg>"""
-
 
 class SVGAmbient(XMLAmbient):
-    DEFAULT_SVG = (
-        """<svg:svg xmlns="http://www.w3.org/2000/svg" x="0" y="0"></svg:svg>"""
-    )
+    """An `Ambient` implementation that provides some useful SVG related functionality, as well as pub-sub support for SVG related queries."""
+
     DEFAULT_SVG_NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}
+    DEFAULT_SVG = """<svg:svg id="root" x="0" y="0" xmlns:svg="http://www.w3.org/2000/svg"></svg:svg>"""
 
     def __init__(
         self,
-        agents: List[Agent],
-        svg_size: Tuple[float, float] = None,
-        svg_position: Tuple[float, float] = None,
-        svg_namespaces: Dict[str, str] = None,
+        agents: list[Agent],
+        svg_size: tuple[float, float] | None = None,
+        svg_position: tuple[float, float] | None = None,
+        svg_namespaces: dict[str, str] | None = None,
         terminate_on_window_close=True,
         **kwargs,
+        # TODO add an option of the root canvas id?
     ):
-        svg = DEFAULT_SVG
+        """Constructor.
+
+        This will create a root SVG canvas to which all other elements will be drawn. The root svg element id attribute is `root`. This can be changed with an `update` query is desired.
+
+        Args:
+            agents (list[Agent]): list of agents to add to this Ambient initially.
+            svg_size (tuple[float, float] | None, optional): size of the root svg element. Defaults to None, meaning `width` and `height` will remain undefined.
+            svg_position (tuple[float, float] | None, optional): position of the root svg element. Defaults to None, which sets both `x` and `y` to zero.
+            svg_namespaces (dict[str, str] | None, optional): the namespaces used. Defaults to the standard svg namespace URI mapping (see `SVGAmbient.DEFAULT_SVG_NAMESPACES`).
+            terminate_on_window_close (bool, optional): whether to terminate the environment if a `WindowClosedEvent` occurs, this typically means the user has exited the simulation. Defaults to True.
+            kwargs (dict[str,Any]): additional optional arguments.
+        """
+        svg = SVGAmbient.DEFAULT_SVG
         svg_namespaces = svg_namespaces if svg_namespaces else dict()
-        for k, v in DEFAULT_SVG_NAMESPACES.items():
+        for k, v in SVGAmbient.DEFAULT_SVG_NAMESPACES.items():
             svg_namespaces.setdefault(k, v)
         super().__init__(agents, xml=svg, namespaces=svg_namespaces, **kwargs)
 
@@ -49,16 +61,17 @@ class SVGAmbient(XMLAmbient):
             )
             LOGGER.debug(f"user input types: {self._user_input_types}")
         except TypeError as e:
-            raise ValueError(
+            raise TypeError(
                 f"Invalid type hint on method {self.on_user_input_event.__name__}"
             ) from e
 
     def _initialise_root(
         self,
-        svg_size: Tuple[float, float] = None,
-        svg_position: Tuple[float, float] = None,
+        svg_size: tuple[float, float] = None,
+        svg_position: tuple[float, float] = None,
         **kwargs,
     ):
+        """Initialise attributes of the root svg element."""
         root_attributes = {}
         if svg_size:
             assert len(svg_size) == 2
@@ -70,17 +83,40 @@ class SVGAmbient(XMLAmbient):
             root_attributes["y"] = svg_position[1]
         self.__update__(Update(xpath="/svg:svg", attrs=root_attributes))
 
-    def on_xml_event(self, action: XMLQuery):
+    def on_xml_event(self, action: XMLQuery) -> None:
+        """A callback that is triggered immediately AFTER an XMLQuery is executed in `__update__`.
+
+        Args:
+            action (XMLQuery): the action
+        """
         assert isinstance(action, XMLQuery)
-        return super().__update__(action)
 
     def on_user_input_event(self, action: UserInputEvent):
+        """Callback that is triggered when a user input action is executed in `__update__`. The type hint `UserInputEvent` is used to determine which user input events can be processed by this ambient, it MUST be provided by an override of this method.
+
+        Args:
+            action (UserInputEvent): action
+        """
         LOGGER.debug("User input event: %s", action)
 
     def on_unknown_event(self, action: Event):
+        """Callback that is triggered when an action of unknown type is executed in `__update__`. This may be overriden for custom handling of such events. Otherwise a ValueError will be raised.
+
+        Args:
+            action (Event): unknown action
+
+        Raises:
+            ValueError: raised by default.
+        """
+        # TODO this should be an UnknownEventTypeError? make this a thing
         raise ValueError(f"Action: {action} has unknown type: {type(action)}.")
 
     def on_exit_event(self, action: WindowCloseEvent):
+        """Callback that is triggered when a `WindowCloseEvent` is executed in `__update__`. By default this will flag the environment from termination. This behaviour can be overriden in a subclass.
+
+        Args:
+            action (WindowCloseEvent): window close action
+        """
         assert isinstance(action, WindowCloseEvent)
         if self._terminate_on_window_close:
             LOGGER.debug("Window closed: %s, shutting down...", action)
@@ -89,17 +125,47 @@ class SVGAmbient(XMLAmbient):
     def __subscribe__(
         self, action: Subscribe | Unsubscribe
     ) -> ActiveObservation | ErrorActiveObservation:
+        """Subscribe to receive XMLQuery events from this environment. This will be called automatically when the relevant actions are executed and should not be called manually. Supported actions are only those that inherit from `star_ray_xml.XMLQuery`.
+
+        Args:
+            action (Subscribe | Unsubscribe): the subscription action
+
+        Raises:
+            TypeError: if the action is not a subscription action
+
+        Returns:
+            ActiveObservation | ErrorActiveObservation: the resulting observation - confirmation that the subscription was successful (or not).
+        """
         if isinstance(action, Subscribe):
             self._publisher.subscribe(action.topic, action.subscriber)
+            return ActiveObservation(action_id=action)
         elif isinstance(action, Unsubscribe):
             self._publisher.unsubscribe(action.topic, action.subscriber)
+            return ActiveObservation(action_id=action)
         else:
             raise TypeError(f"Unknown subscription action type: {type(action)}")
 
     def __update__(self, action: Any) -> ActiveObservation | ErrorActiveObservation:
+        """Execute a write action in this `Ambient`.
+
+        Supported action types:
+        - Any action that inherits from `XMLQuery`
+        - User input actions (types specified by the type hint in `SVGAmbient.on_user_input_event`, see its docs for details.)
+        - `WindowCloseEvent`s
+
+        Unsupported actions will be routed to `SVGAmbient.on_unknown_event`, which may raise an exception.
+
+        Args:
+            action (Any): action
+
+        Returns:
+            ActiveObservation | ErrorActiveObservation: the resulting observation
+        """
         try:
             if isinstance(action, XMLQuery):
+                result = super().__update__(action)
                 self.on_xml_event(action)
+                return result
             elif isinstance(action, self._user_input_types):
                 self.on_user_input_event(action)
             else:

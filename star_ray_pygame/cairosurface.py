@@ -1,5 +1,5 @@
-""" Defines the pygame view that is used to render SVG """
-from typing import Any, List, Tuple
+"""Module that defines the backend for svg rendering to a pygame surface. This relies on the cairosvg package."""
+
 from lxml import etree as ET
 import numpy as np
 import cairosvg
@@ -8,9 +8,14 @@ import re
 
 
 class CairoSVGSurface:
-    """ A surface implementation that is able to render svg graphics to a pygame window."""
+    """A surface implementation that is able to render svg graphics to a pygame window."""
 
-    def __init__(self, surface_size: Tuple[int, int]):
+    def __init__(self, surface_size: tuple[int, int]):
+        """Constructor.
+
+        Args:
+            surface_size (tuple[int,int]) : size of the render surface.
+        """
         super().__init__()
         self._svg_source = """<svg xmlns="http://www.w3.org/2000/svg"></svg>"""
         self._svg_tree = ET.fromstring(self._svg_source)
@@ -28,6 +33,11 @@ class CairoSVGSurface:
         self._window_size = (0, 0)
 
     def update(self, svg_tree: ET.ElementBase):
+        """Update internal svg data.
+
+        Args:
+            svg_tree (ET.ElementBase): root of the svg tree
+        """
         self._svg_tree = svg_tree
         # svg element must be at the root
         assert self._svg_tree.tag.endswith("svg")
@@ -46,15 +56,24 @@ class CairoSVGSurface:
         )
 
     @property
-    def svg_size(self):
+    def svg_size(self) -> tuple[float, float]:
+        """Getter for the size of the root svg element (svg coordinates).
+
+        Returns:
+            tuple[float,float]: root svg element size
+        """
         return self._svg_size
 
     @property
-    def surface_position(self):
+    def surface_position(self) -> tuple[float, float]:
+        """Getter for the position of the surface in the window, this is used to place the surface in the window.
+
+        Returns:
+            tuple[float, float]: surface position in the window.
+        """
         # compute the surface position based on svg position and scaling factor
         p = self._svg_position
-        surface_position = (p[0] * self.scaling_factor,
-                            p[1] * self.scaling_factor)
+        surface_position = (p[0] * self.scaling_factor, p[1] * self.scaling_factor)
         # center the surface in the window
         surface_size = self.surface_size
         window_size = self._window_size
@@ -68,15 +87,32 @@ class CairoSVGSurface:
         )
 
     @property
-    def surface_size(self):
+    def surface_size(self) -> tuple[int, int]:
+        """Getter for the size of the render surface (in pixels).
+
+        Returns:
+            tuple[int, int]: size of the render surface.
+        """
         return self._surface.get_size()
 
     @property
-    def scaling_factor(self):
+    def scaling_factor(self) -> float:
+        """Getter for the scaling factor (maintaining aspect ratio) of the svg to ensure it fits in the render surface.
+
+        Returns:
+            float: scaling factor
+        """
         return self._scaling_factor
 
-    def pixel_to_svg(self, point: Tuple[float, float]) -> Tuple[float, float]:
-        """Transforms a point from pixel space to svg space."""
+    def pixel_to_svg(self, point: tuple[float, float]) -> tuple[float, float]:
+        """Transforms a point from pixel space to svg space.
+
+        Args:
+            point (tuple[float, float]): to transform
+
+        Returns:
+            tuple[float, float]: transformed point
+        """
         spos = self.surface_position
         sfac = self.scaling_factor
         return (
@@ -85,32 +121,60 @@ class CairoSVGSurface:
         )
 
     def pixel_scale_to_svg_scale(
-        self, point: Tuple[float, float]
-    ) -> Tuple[float, float]:
-        """Scales a point from pixel space to svg space (ignores any other transformations)."""
+        self, point: tuple[float, float]
+    ) -> tuple[float, float]:
+        """Scale a point (typically a (width, height) pair or similar) that lies in pixel space to svg space. Only scaling is applied.
+
+        Args:
+            point (tuple[float, float]): point to scale
+
+        Returns:
+            tuple[float, float]: scaled point
+        """
         sfac = self.scaling_factor
         return (point[0] * sfac, point[1] * sfac)
 
-    def svg_to_pixel(self, point: Tuple[float, float]) -> Tuple[float, float]:
+    def svg_to_pixel(self, point: tuple[float, float]) -> tuple[float, float]:
+        """Transform a point from svg space to pixel space.
+
+        Args:
+            point (tuple[float, float]): to transform
+
+        Returns:
+            tuple[float, float]: transformed point
+        """
         raise NotImplementedError()  # TODO
 
     def svg_scale_to_pixel_scale(
-        self, point: Tuple[float, float]
-    ) -> Tuple[float, float]:
+        self, point: tuple[float, float]
+    ) -> tuple[float, float]:
+        """Scale a point (typically a (width, height) pair or similar) that lies in svg space to pixel space. Only scaling is applied.
+
+        Args:
+            point (tuple[float, float]): point to scale
+
+        Returns:
+            tuple[float, float]: scaled point
+        """
         raise NotImplementedError()  # TODO
 
     def render(self, window: pygame.Surface, background_color="#ffffff"):
+        """Render the svg to the pygame surface `window`.
+
+        Args:
+            window (pygame.Surface): pygame surface
+            background_color (str, optional): background color. Defaults to white.
+        """
         # center the svg in the window
         self._window_size = window.get_size()
-        array = self._svg_to_npim(
-            self._svg_source, background_color=background_color)
+        array = self._svg_to_npim(self._svg_source, background_color=background_color)
         pygame.surfarray.blit_array(self._surface, array)
         window.fill(background_color)
         window.blit(self._surface, self.surface_position)
         pygame.display.flip()
 
     def _surface_to_npim(self, surface: cairosvg.surface.PNGSurface):
-        """Transforms a Cairo surface into a numpy array."""
+        """Transforms a Cairo `surface` into a numpy array."""
         # a copy must be made to avoid a seg fault if the backing array disappears... (not sure why this happens!)
         surface = surface.cairo
         H, W = surface.get_height(), surface.get_width()
@@ -120,7 +184,7 @@ class CairoSVGSurface:
         return im
 
     def _svg_to_npim(self, svg_bytestring, dpi=96, background_color="#ffffff"):
-        """Renders a svg bytestring as a RGB image in a numpy array"""
+        """Renders a svg bytestring as a RGB image in a numpy array."""
         tree = cairosvg.parser.Tree(bytestring=svg_bytestring)
         output_size = self.surface_size
         # this will render to the surface while maintaining the aspect ratio - cool!
@@ -153,8 +217,8 @@ class CairoSVGSurface:
         return self._surface_to_npim(surf)
 
     def elements_under(
-        self, point: Tuple[float, float], transform: bool = False
-    ) -> List[str]:
+        self, point: tuple[float, float], transform: bool = False
+    ) -> list[str]:
         """Gets all svg elements ids that are under the given `point`.
 
         Args:
@@ -173,12 +237,12 @@ def point_in_rect(rect, point):
     """Determine if a point is inside a rectangle."""
     try:
         x, y = point
-        rx, ry, width, height = [
+        rx, ry, width, height = (
             float(rect.get(attr)) for attr in ("x", "y", "width", "height")
-        ]
+        )
     except ValueError as e:
         missing = [
-            attr for attr in ("x", "y", "width", "height") if not attr in rect.attrib
+            attr for attr in ("x", "y", "width", "height") if attr not in rect.attrib
         ]
         raise ValueError(
             f"Missing required attributes {missing} on rect: '{rect.get('id', '<MISSING ID>')}'"
@@ -189,19 +253,19 @@ def point_in_rect(rect, point):
 def point_in_circle(circle, point):
     """Determine if a point is inside a circle."""
     x, y = point
-    cx, cy, r = [float(circle.get(attr)) for attr in ("cx", "cy", "r")]
+    cx, cy, r = (float(circle.get(attr)) for attr in ("cx", "cy", "r"))
     return ((x - cx) ** 2 + (y - cy) ** 2) <= r**2, point
 
 
-def parse_transform(transform: str):
+def parse_transform(transform: str) -> tuple[float, float, tuple[float, float]]:
+    """Parses an svg `transform` attribute extracting the `scale`, `rotation` and `translation`."""
     if transform is None:
         return ((1, 1), None, None)
     scale_match = re.search(r"scale\(([^)]+)\)", transform)
     rotation_match = re.search(r"rotate\(([^)]+)\)", transform)
     translate_match = re.search(r"translate\(([^)]+)\)", transform)
 
-    scale = tuple(map(float, scale_match.group(1).split(","))
-                  ) if scale_match else None
+    scale = tuple(map(float, scale_match.group(1).split(","))) if scale_match else None
     rotation = (
         tuple(map(float, rotation_match.group(1).split(",")))
         if rotation_match
@@ -222,7 +286,8 @@ def parse_transform(transform: str):
     return scale, rotation, translate
 
 
-def in_svg(node, point):
+def in_svg(node: ET.ElementBase, point: tuple[float, float]):
+    """Checks if the point is in the bounds of the svg element `node` and returns this aswell as the point transformed to the nodes coordinate space."""
     x = node.get("x", None)
     y = node.get("y", None)
     width = node.get("width", None)
@@ -232,34 +297,44 @@ def in_svg(node, point):
     assert translate is None  # not yet supported
     point = list(point)
     isin = True
-    if not x is None:
+    if x is not None:
         point[0] -= float(x)
         point[0] /= scale[0]
         isin &= point[0] >= 0.0
-        if not width is None:
+        if width is not None:
             isin &= point[0] <= float(width)
-    if not y is None:
+    if y is not None:
         point[1] -= float(y)
         point[1] /= scale[1]
         isin &= point[1] >= 0.0
-        if not height is None:
+        if height is not None:
             isin &= point[1] <= float(height)
     return isin, point
 
 
-def in_group(node, point):
+def in_group(node: ET.ElementBase, point: tuple[float, float]):
+    """Checks if the point is in the bounds of the `group` element and returns this aswell as the point transformed to the nodes coordinate space."""
     assert node.get("transform", None) is None  # not supported
     return True, point
 
 
-def elements_under(node, point: Tuple[float, float]):
+def elements_under(node: ET.ElementBase, point: tuple[float, float]):
+    """Gets all svg elements ids that are under the given `point`. Note that not all svg transformation are supported.
+
+    Args:
+        node: the SVG element to check.
+        point (Tuple[float, float]): to check under
+
+    Returns:
+        List[str]: list of element ids that are under the `point`.
+    """
     SUPPORTED_SHAPES = {
         "{http://www.w3.org/2000/svg}svg": in_svg,
         "{http://www.w3.org/2000/svg}g": in_group,
         "{http://www.w3.org/2000/svg}rect": point_in_rect,
         "{http://www.w3.org/2000/svg}circle": point_in_circle,
     }
-    if not node.tag in SUPPORTED_SHAPES:
+    if node.tag not in SUPPORTED_SHAPES:
         # _LOGGER.warn(f"encountered unsupported shape: %s", node.tag)
         return []
     node_id = node.get("id", None)

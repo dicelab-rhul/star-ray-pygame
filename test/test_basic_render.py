@@ -1,3 +1,5 @@
+"""Tests rendering using the View (without an Avatar)."""
+
 from star_ray_pygame import View, WindowConfiguration
 from star_ray.event import (
     WindowCloseEvent,
@@ -7,7 +9,6 @@ from star_ray.event import (
     WindowResizeEvent,
 )
 from lxml import etree
-import time
 
 WIDTH, HEIGHT = 640, 480
 SVG = f"""
@@ -46,7 +47,7 @@ while running:
             running = False
         elif isinstance(event, MouseButtonEvent):
             print(event)
-        elif isinstance(event, (WindowFocusEvent, WindowMoveEvent, WindowResizeEvent)):
+        elif isinstance(event, WindowFocusEvent | WindowMoveEvent | WindowResizeEvent):
             print("window event:", event)
             view.render()
     view.render()
