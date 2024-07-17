@@ -1,5 +1,6 @@
 from typing import Tuple
 from star_ray.event import (
+    Event,
     MouseButtonEvent as _MouseButtonEvent,
     MouseMotionEvent as _MouseMotionEvent,
     KeyEvent,
@@ -24,10 +25,17 @@ class MouseMotionEvent(_MouseMotionEvent):
 
 
 MouseEvent = MouseButtonEvent | MouseMotionEvent
-WindowEvent = WindowCloseEvent | WindowOpenEvent | WindowFocusEvent | WindowMoveEvent | WindowResizeEvent
+WindowEvent = (
+    WindowCloseEvent
+    | WindowOpenEvent
+    | WindowFocusEvent
+    | WindowMoveEvent
+    | WindowResizeEvent
+)
 UserInputEvent = MouseEvent | KeyEvent | WindowEvent
 
 __all__ = (
+    "Event",
     "UserInputEvent",
     "MouseEvent",
     "WindowEvent",

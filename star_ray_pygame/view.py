@@ -183,13 +183,11 @@ class View:
 
     def _window_focus_callback(self, has_focus):
         """Callback for `pywinctl` when the pygame window losses or gains focus. A custom pygame event is added to the queue internally."""
-        pygame.event.post(pygame.event.Event(
-            PYGAME_WINDOWFOCUS, has_focus=has_focus))
+        pygame.event.post(pygame.event.Event(PYGAME_WINDOWFOCUS, has_focus=has_focus))
 
     def _window_moved_callback(self, position):
         """Callback for `pywinctl` when the pygame window is moved. A custom pygame event is added to the queue internally."""
-        pygame.event.post(pygame.event.Event(
-            PYGAME_WINDOWMOVE, position=position))
+        pygame.event.post(pygame.event.Event(PYGAME_WINDOWMOVE, position=position))
 
     def _window_resize_callback(self, size):
         """Callback for `pywinctl` when the pygame window is resized. A custom pygame event is added to the queue internally."""
@@ -267,8 +265,7 @@ def create_window_close_event_from_pygame_event(
 ) -> WindowCloseEvent:
     """Creates an `WindowCloseEvent` from a `pygame` window close event."""
     if pygame_event.type != PYGAME_QUIT:
-        raise ValueError(
-            "The provided pygame event is not a `PYGAME_QUIT` event.")
+        raise ValueError("The provided pygame event is not a `PYGAME_QUIT` event.")
     return WindowCloseEvent()
 
 
@@ -329,8 +326,7 @@ def create_mouse_motion_event_from_pygame_event(
 ) -> MouseMotionEvent:
     """Creates a `MouseMotionEvent` instance from a `pygame` mouse movement event."""
     if pygame_event.type != PYGAME_MOUSEMOTION:
-        raise ValueError(
-            "The provided pygame event is not a `MOUSEMOTION` event.")
+        raise ValueError("The provided pygame event is not a `MOUSEMOTION` event.")
 
     position_raw = pygame_event.pos
     relative_raw = pygame_event.rel
