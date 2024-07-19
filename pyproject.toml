@@ -1,6 +1,26 @@
-
 [project]
+name = "star_ray_pygame"
+version = "0.0.4"
+description = "An optional extra for the `star_ray` package that supports `pygame` as a UI backend."
+authors = [{name = "Benedict Wilkins", email = "benrjw@gmail.com"}]
+license = { file = "LICENSE" }
+readme = "README.md"
 requires-python = ">=3.10"
+
+[project.urls]
+Repository = "https://github.com/dicelab-rhul/star-ray-pygame"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+star_ray =  { version = ">=0.0.4", extras = ["xml"] }
+cairosvg = ">=1.26.1"
+pygame = ">=2.6.0"
+pywinctl = ">=0.4.0"
+numpy = "*"
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
