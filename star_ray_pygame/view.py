@@ -3,7 +3,7 @@
 from lxml import etree as ET
 from pygame.event import EventType
 from typing import Any
-import pywinctl as pwc  # pylint: disable = E0401
+import pywinctl as pwc
 import pygame
 import time
 import copy
@@ -62,19 +62,19 @@ class View:
             window_config (WindowConfiguration): configuration of the pygame window.
             surface_size (tuple[int, int], optional): size of the render surface (in pixels). Defaults to None, meaning it will be derived from the supplied window size.
         """
-        pygame.init()  # pylint: disable=no-member
+        pygame.init()
         self._window_config = copy.deepcopy(window_config)
         self._screen_size = get_screen_size()
 
         flags = 0
         if window_config.resizable:
             # this should be false until we can resize/scale the context...
-            flags |= pygame.RESIZABLE  # pylint: disable=no-member
+            flags |= pygame.RESIZABLE
         if window_config.fullscreen:
             # set the window size to be the screen size if full screen
             self._window_config.width = self._screen_size[0]
             self._window_config.height = self._screen_size[1]
-            flags |= pygame.FULLSCREEN  # pylint: disable=no-member
+            flags |= pygame.FULLSCREEN
         self._window_flags = flags
         self._window = pygame.display.set_mode(
             self.window_size, flags=self._window_flags
@@ -216,7 +216,7 @@ class View:
             if fun:
                 try:
                     events.append(fun(self, pg_event))
-                except Exception as e:  # pylint: disable=W0718
+                except Exception as e:
                     _LOGGER.exception(
                         "Failed to convert `pygame` event: %s  to `star_ray` event as an error occured: %s",
                         pg_event,
@@ -237,7 +237,7 @@ class View:
         """Close the UI - terminate pygame and clean up."""
         self._closed = True
         self._pwc_window.watchdog.stop()
-        pygame.quit()  # pylint: disable=no-member
+        pygame.quit()
 
     @property
     def window_config(self) -> WindowConfiguration:
