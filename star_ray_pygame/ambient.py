@@ -28,7 +28,7 @@ class SVGAmbient(XMLAmbient):
         svg_size: tuple[float, float] | None = None,
         svg_position: tuple[float, float] | None = None,
         svg_namespaces: dict[str, str] | None = None,
-        terminate_on_window_close=True,
+        terminate_on_window_close: bool = True,
         **kwargs,
         # TODO add an option of the root canvas id?
     ):
@@ -165,10 +165,14 @@ class SVGAmbient(XMLAmbient):
 
         Supported action types:
         - Any action that inherits from `XMLQuery`
-        - User input actions (types specified by the type hint in `SVGAmbient.on_user_input_event`, see its docs for details.)
-        - `WindowCloseEvent`s
+        - User input actions (types specified by the type hint in `SVGAmbient.on_user_input_event`, see method docs for details.)
+        - `WindowCloseEvent` if `terminate_on_window_close` was set to True.
 
         Unsupported actions will be routed to `SVGAmbient.on_unknown_event`, which may raise an exception.
+
+        To support additional action types override this method (make sure to call `super().__update__`).
+        To support additional user input action type override`on_user_input_event` and add new types to the type hints
+        - it is best to keep existing type hints unless you explicitly want them to be treated as unknown types.
 
         Args:
             action (Any): action
