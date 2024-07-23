@@ -4,7 +4,7 @@ from star_ray import Sensor, Actuator, Component
 from star_ray.event import ActiveObservation, ErrorObservation, Event
 from star_ray_xml import _XMLState, XMLSensor, XMLQuery
 from star_ray.ui import WindowConfiguration
-from star_ray.agent import AgentRouted, DeviceSensor, observe
+from star_ray.agent import AgentRouted, IOSensor, observe
 from .view import View, get_screen_size
 
 
@@ -33,7 +33,7 @@ class Avatar(AgentRouted):
             window_config = WindowConfiguration()  # use default values
         self._view = View(window_config=window_config)
         # this sensor will get all relevant user input events!
-        sensors.append(DeviceSensor(self._view))
+        sensors.append(IOSensor(self._view))
         self._state = None  # set on the first cycle when svg data has been sensed
         super().__init__(sensors, actuators, **kwargs)
 
@@ -44,7 +44,7 @@ class Avatar(AgentRouted):
         Returns:
             XMLSensor: the sensor
         """
-        return next(filter(lambda x: isinstance(x, XMLSensor), self.sensors))
+        return next(iter(self.get_sensors(oftype=XMLSensor)), None)
 
     def get_screen_info(self):
         """Get information about the screen (monitor), including the monitor index and size.
