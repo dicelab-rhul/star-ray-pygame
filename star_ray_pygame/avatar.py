@@ -1,11 +1,10 @@
 """Module defines the `Avatar` class, see class for details."""
 
 from star_ray import Sensor, Actuator, Component
-from star_ray.event import ActiveObservation, ErrorObservation
+from star_ray.event import ActiveObservation, ErrorObservation, Event
 from star_ray_xml import _XMLState, XMLSensor, XMLQuery
 from star_ray.ui import WindowConfiguration
-from star_ray.agent import AgentRouted, observe, decide
-
+from star_ray.agent import AgentRouted, DeviceSensor, observe
 from .view import View, get_screen_size
 
 
@@ -30,11 +29,13 @@ class Avatar(AgentRouted):
         actuators = actuators if actuators else []
         sensors = sensors if sensors else []
         sensors.append(XMLSensor())
-        super().__init__(sensors, actuators, **kwargs)
         if window_config is None:
             window_config = WindowConfiguration()  # use default values
         self._view = View(window_config=window_config)
+        # this sensor will get all relevant user input events!
+        sensors.append(DeviceSensor(self._view))
         self._state = None  # set on the first cycle when svg data has been sensed
+        super().__init__(sensors, actuators, **kwargs)
 
     @property
     def xml_sensor(self) -> XMLSensor:
@@ -98,22 +99,18 @@ class Avatar(AgentRouted):
 
     @observe
     def _on_xml_change(self, observation: XMLQuery):
-        print("???")
         """Called whenever an `XMLQuery` event is received via the `XMLSensor` attached to this agent, it will update the state of the view."""
         # update view state from xml query
         observation.__execute__(self._state)
 
-    @decide
-    def get_user_input(self):
-        """`decide` method that will return all user generated events. These events will then be forwarded to the relevant actuators according to the `decide` protocol.
+    @observe
+    def on_event(self, observation: Event):
+        """Automatically route all events that may come from sensors to relevant actuators.
 
-        This method may be overriden in a subclass but must be decorated with `decide`.
-
-        Returns:
-            List[Event]: user input events
+        Args:
+            observation (Event): observations to route
         """
-        # NOTE: there will on be a single MouseMotionEvent produced by pygame on each call to get_events.
-        return self._view.get_events()
+        self.attempt(observation)
 
     def __cycle__(self):  # noqa: D105
         super().__cycle__()

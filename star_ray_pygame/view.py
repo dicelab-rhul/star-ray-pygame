@@ -18,6 +18,7 @@ from star_ray.event import (
     WindowResizeEvent,
     WindowMoveEvent,
     WindowFocusEvent,
+    ScreenSizeEvent,
 )
 from star_ray.ui import WindowConfiguration
 
@@ -36,6 +37,7 @@ PYGAME_WINDOWMOVE = pygame.USEREVENT + 1
 PYGAME_WINDOWFOCUS = pygame.USEREVENT + 2
 PYGAME_WINDOWOPEN = pygame.USEREVENT + 3
 PYGAME_WINDOWCLOSE = PYGAME_QUIT  # Alias for PYGAME_QUIT
+PYGAME_SCREENSIZE = pygame.USEREVENT + 4
 
 PYGAME_LEFTMOUSEBUTTON = 1
 PYGAME_MIDDLEMOUSEBUTTON = 2
@@ -83,22 +85,23 @@ class View:
             pygame.display.set_caption(self._window_config.title)
         if surface_size is None:
             PADDING = 20
-            aspect = self.get_window_aspect()
             surface_size = (
-                self.window_size[0] - PADDING * aspect,
+                self.window_size[0] - PADDING,
                 self.window_size[1] - PADDING,
             )
+            # print(surface_size)
+            # print(self.window_size)
         # this is where the svg is rendered. It should be the same size as the svg image
         self._surface = CairoSVGSurface(surface_size)
         self._closed = False
         self._pwc_window = None
         self._pwc_window = self._setup_pwc_window()
-
         # initial events that are the window position/size
-        time.sleep(0.1)  # this is unfortunate...
+        time.sleep(0.1)  # TODO this is unfortunate...
         window_info = self.get_window_info()
         self._window_resize_callback(window_info["size"])
         self._window_moved_callback(window_info["position"])
+        self._screen_size_callback(self._screen_size)
 
     def get_window_info(self) -> dict[str, Any]:
         """Get information about the display window, including: title, position (on the monitor) and size (in pixels).
@@ -148,7 +151,7 @@ class View:
         """Gets all svg element `id`s that are under the given `point`.
 
         Args:
-            point (Tuple[float, float]): to check under
+            point (Tuple[float, float]): to check under, expected svg space unless `transform=True` in which case window space (pixels) is expected.
             transform (bool, optional): whether to transform the given `point` to svg space. Defaults to False.
 
         Returns:
@@ -204,7 +207,7 @@ class View:
         """
         return self._surface.svg_scale_to_pixel_scale(point)
 
-    def get_events(self) -> list[Event]:
+    def get_nowait(self) -> list[Event]:
         """Get all user input events that have happened since the last call to this method. Internally this will poll the `pygame` event loop.
 
         Returns:
@@ -295,7 +298,11 @@ class View:
         """Callback for `pywinctl` when the pygame window is resized. A custom pygame event is added to the queue internally."""
         pygame.event.post(pygame.event.Event(PYGAME_WINDOWRESIZE, size=size))
 
-    def _setup_pwc_window(self):
+    def _screen_size_callback(self, size):
+        """Callback for when the screen size is discovered for the first time. A custom pygame event is added to the queue internally."""
+        pygame.event.post(pygame.event.Event(PYGAME_SCREENSIZE, size=size))
+
+    def _setup_pwc_window(self) -> pwc.Window:
         """Getter for the `pywinctl` window object. This object is used to watch changes to the pygame window and addresses some pygame limitations."""
         if self._pwc_window:
             self._pwc_window.watchdog.stop()
@@ -360,6 +367,18 @@ def create_window_resize_event_from_pygame_event(
             "The provided pygame event is not a `PYGAME_WINDOWRESIZE` event."
         )
     return WindowResizeEvent(size=tuple(pygame_event.size))
+
+
+def create_screen_size_event_from_pygame_event(
+    view: View,
+    pygame_event: EventType,
+) -> ScreenSizeEvent:
+    """Creates a `ScreenSizeEvent` from a `pygame` screen size event."""
+    if pygame_event.type != PYGAME_SCREENSIZE:
+        raise ValueError(
+            "The provided pygame event is not a `PYGAME_SCREENSIZE` event."
+        )
+    return ScreenSizeEvent(size=tuple(pygame_event.size))
 
 
 def create_window_close_event_from_pygame_event(
@@ -456,4 +475,5 @@ EVENT_MAP = {
     PYGAME_WINDOWRESIZE: create_window_resize_event_from_pygame_event,
     PYGAME_WINDOWMOVE: create_window_move_event_from_pygame_event,
     PYGAME_WINDOWFOCUS: create_window_focus_event_from_pygame_event,
+    PYGAME_SCREENSIZE: create_screen_size_event_from_pygame_event,
 }

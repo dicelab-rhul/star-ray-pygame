@@ -198,7 +198,7 @@ class CairoSVGSurface:
             output_width=output_size[0],
             output_height=output_size[1],
         )
-        # compute the scaling factor this is computed in when rendering the svg above
+        # compute the scaling factor this is computed when rendering the svg above
         # we need to manually compute it here to to be able to transform points to
         # svg space and position the canvas surface
         svg_size, sur_size = self.svg_size, self.surface_size
@@ -219,10 +219,10 @@ class CairoSVGSurface:
     def elements_under(
         self, point: tuple[float, float], transform: bool = False
     ) -> list[str]:
-        """Gets all svg elements ids that are under the given `point`.
+        """Gets all svg element `id`s that are under the given `point`.
 
         Args:
-            point (Tuple[float, float]): to check under
+            point (Tuple[float, float]): to check under, expected svg space unless `transform=True` in which case window space (pixels) is expected.
             transform (bool, optional): whether to transform the given `point` to svg space. Defaults to False.
 
         Returns:

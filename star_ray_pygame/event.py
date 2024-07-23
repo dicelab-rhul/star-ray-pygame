@@ -10,6 +10,7 @@ from star_ray.event import (
     WindowMoveEvent,
     WindowOpenEvent,
     WindowResizeEvent,
+    ScreenSizeEvent,
 )
 from star_ray_xml import XMLQuery, XPathQuery, Update, Select, Insert, Delete, Replace
 
@@ -50,6 +51,7 @@ __all__ = (
     "WindowMoveEvent",
     "WindowOpenEvent",
     "WindowResizeEvent",
+    "ScreenSizeEvent",
     "XMLQuery",
     "XPathQuery",
     "Update",

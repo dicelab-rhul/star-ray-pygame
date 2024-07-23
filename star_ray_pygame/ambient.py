@@ -3,10 +3,10 @@
 from typing import Any
 from star_ray.event import ActiveObservation, ErrorActiveObservation
 from star_ray.pubsub._action import Subscribe, Unsubscribe
-from star_ray_xml import XMLAmbient, XMLQuery, Update
 from star_ray import Agent
-from star_ray.agent.component.type_routing import resolve_first_argument_types
+from star_ray.utils.type_routing import TypeRouter
 from star_ray.pubsub import TypePublisher
+from star_ray_xml import XMLAmbient, XMLQuery, Update, Select
 
 from .event import Event, WindowCloseEvent, UserInputEvent
 from .utils import LOGGER
@@ -19,6 +19,8 @@ class SVGAmbient(XMLAmbient):
 
     DEFAULT_SVG_NAMESPACES = {"svg": "http://www.w3.org/2000/svg"}
     DEFAULT_SVG = """<svg:svg id="root" x="0" y="0" xmlns:svg="http://www.w3.org/2000/svg"></svg:svg>"""
+    DEFAULT_SVG_SIZE = (640, 640)
+    DEFAULT_SVG_POSITION = (0, 0)
 
     def __init__(
         self,
@@ -42,6 +44,9 @@ class SVGAmbient(XMLAmbient):
             terminate_on_window_close (bool, optional): whether to terminate the environment if a `WindowClosedEvent` occurs, this typically means the user has exited the simulation. Defaults to True.
             kwargs (dict[str,Any]): additional optional arguments.
         """
+        # this publisher is used in __subscribe__ to publish events to agents that want them.
+        self._publisher = TypePublisher()
+
         svg = SVGAmbient.DEFAULT_SVG
         svg_namespaces = svg_namespaces if svg_namespaces else dict()
         for k, v in SVGAmbient.DEFAULT_SVG_NAMESPACES.items():
@@ -51,13 +56,10 @@ class SVGAmbient(XMLAmbient):
         self._terminate_on_window_close = terminate_on_window_close
         self._initialise_root(svg_size=svg_size, svg_position=svg_position)
 
-        # this publisher is used in __subscribe__ to publish events to agents that want them.
-        self._publisher = TypePublisher()
-
         # this will resolve the types present in `on_user_input_event` type hint and ensure the relevant events are correctly forwarded
         try:
             self._user_input_types = tuple(
-                resolve_first_argument_types(self.on_user_input_event)
+                TypeRouter.resolve_first_argument_types(self.on_user_input_event)
             )
             LOGGER.debug(f"user input types: {self._user_input_types}")
         except TypeError as e:
@@ -72,7 +74,13 @@ class SVGAmbient(XMLAmbient):
         **kwargs,
     ):
         """Initialise attributes of the root svg element."""
-        root_attributes = {}
+        # see what has already been defined
+        root_attributes = self.__select__(
+            Select.new("/svg:svg", ["x", "y", "width", "height"])
+        ).values[0]
+        # filter out None values
+        root_attributes = {k: v for k, v in root_attributes.items() if v is not None}
+
         if svg_size:
             assert len(svg_size) == 2
             root_attributes["width"] = svg_size[0]
@@ -81,7 +89,14 @@ class SVGAmbient(XMLAmbient):
             assert len(svg_position) == 2
             root_attributes["x"] = svg_position[0]
             root_attributes["y"] = svg_position[1]
-        self.__update__(Update(xpath="/svg:svg", attrs=root_attributes))
+
+        root_attributes.setdefault("x", SVGAmbient.DEFAULT_SVG_POSITION[0])
+        root_attributes.setdefault("y", SVGAmbient.DEFAULT_SVG_POSITION[1])
+        root_attributes.setdefault("width", SVGAmbient.DEFAULT_SVG_SIZE[0])
+        root_attributes.setdefault("height", SVGAmbient.DEFAULT_SVG_SIZE[1])
+        result = self.__update__(Update.new("/svg:svg", root_attributes))
+        if isinstance(result, ErrorActiveObservation):
+            raise result.exception()  # something bad happened...
 
     def on_xml_event(self, action: XMLQuery) -> None:
         """A callback that is triggered immediately AFTER an XMLQuery is executed in `__update__`.

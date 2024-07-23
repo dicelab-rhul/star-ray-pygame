@@ -40,7 +40,7 @@ async def main():
         view = View(window_config)
         view.update(etree.fromstring(SVG))
         while running:
-            events = view.get_events()
+            events = view.get_nowait()
             await asyncio.sleep(0.1)
             for event in events:
                 if isinstance(event, WindowCloseEvent):

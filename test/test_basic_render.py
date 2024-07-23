@@ -40,7 +40,7 @@ view.update(etree.fromstring(SVG))
 
 running = True
 while running:
-    events = view.get_events()
+    events = view.get_nowait()
     # time.sleep(0.1)
     for event in events:
         if isinstance(event, WindowCloseEvent):

@@ -10,12 +10,12 @@ This extension has been developed with the intention of exploring human-agent in
 
 This package serves as a very flexible foundation for supporting researching into human-agent (or AI) interactions on digital devices by leveraging some existing technologies.
 
-See for example, the [`icua2`](https://github.com/dicelab-rhul/icua2) project.
+See for example, the [`icua`](https://github.com/dicelab-rhul/icua) project.
 
 ## Related Projects
 
 - [star-ray](https://github.com/dicelab-rhul/star-ray)
-- [icua2](https://github.com/dicelab-rhul/icua2)
+- [icua](https://github.com/dicelab-rhul/icua)
 
 
 
