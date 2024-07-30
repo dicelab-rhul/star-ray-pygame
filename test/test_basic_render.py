@@ -10,6 +10,10 @@ from star_ray.event import (
 )
 from lxml import etree
 
+from star_ray.utils import _LOGGER
+
+_LOGGER.setLevel("DEBUG")
+
 WIDTH, HEIGHT = 640, 480
 SVG = f"""
 <svg x="100" y="100" width="{WIDTH}" height="{HEIGHT}" xmlns="http://www.w3.org/2000/svg">
