@@ -1,7 +1,7 @@
 """Module defines the `Avatar` class, see class for details."""
 
 from star_ray import Sensor, Actuator, Component
-from star_ray.event import ActiveObservation, ErrorObservation, Event
+from star_ray.event import ActiveObservation, ErrorObservation, Event, WindowOpenEvent  # noqa TODO trigger this event
 from star_ray_xml import _XMLState, XMLSensor, XMLQuery
 from star_ray.ui import WindowConfiguration
 from star_ray.agent import AgentRouted, IOSensor, observe
@@ -32,6 +32,7 @@ class Avatar(AgentRouted):
         if window_config is None:
             window_config = WindowConfiguration()  # use default values
         self._view = View(window_config=window_config)
+        # TODO trigger window open event! - perhaps when the first observation is made...
         # this sensor will get all relevant user input events!
         sensors.append(IOSensor(self._view))
         self._state = None  # set on the first cycle when svg data has been sensed

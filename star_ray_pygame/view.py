@@ -5,7 +5,6 @@ from pygame.event import EventType
 from typing import Any
 import pywinctl as pwc
 import pygame
-import time
 import copy
 import math
 
@@ -89,15 +88,13 @@ class View:
                 self.window_size[0] - PADDING,
                 self.window_size[1] - PADDING,
             )
-            # print(surface_size)
-            # print(self.window_size)
         # this is where the svg is rendered. It should be the same size as the svg image
         self._surface = CairoSVGSurface(surface_size)
         self._closed = False
         self._pwc_window = None
         self._pwc_window = self._setup_pwc_window()
         # initial events that are the window position/size
-        time.sleep(0.1)  # TODO this is unfortunate...
+        # time.sleep(0.1)  # TODO this is unfortunate...
         window_info = self.get_window_info()
         self._window_resize_callback(window_info["size"])
         self._window_moved_callback(window_info["position"])
