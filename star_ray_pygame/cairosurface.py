@@ -173,6 +173,26 @@ class CairoSVGSurface:
         window.blit(self._surface, self.surface_position)
         pygame.display.flip()
 
+    def render_to_array(self, size: tuple[int, int]) -> np.ndarray:
+        """Render this cairo surface directly to a numpy array of the given size. `size` serves the role of the window size in the usual rendering process, it is assumed to be >= to the svg surface size.
+
+        Args:
+            size (tuple[int, int]): array size to render to (>= svg surface size).
+
+        Returns:
+            np.ndarray: the resulting array in WHC (uint8) format
+        """
+        self._window_size = size
+        result = np.full((*self._window_size, 3), 255, dtype=np.uint8)
+        array = self._svg_to_npim(self._svg_source, background_color="#ffffff")
+        x, y = int(self.surface_position[0]), int(self.surface_position[1])
+        result[
+            x : x + array.shape[0],
+            y : y + array.shape[1],
+            :,
+        ] = array
+        return result
+
     def _surface_to_npim(self, surface: cairosvg.surface.PNGSurface):
         """Transforms a Cairo `surface` into a numpy array."""
         # a copy must be made to avoid a seg fault if the backing array disappears... (not sure why this happens!)

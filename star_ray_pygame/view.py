@@ -83,7 +83,7 @@ class View:
         if self._window_config.title:
             pygame.display.set_caption(self._window_config.title)
         if surface_size is None:
-            PADDING = 20
+            PADDING = 0  # TODO this should be an option?
             surface_size = (
                 self.window_size[0] - PADDING,
                 self.window_size[1] - PADDING,
