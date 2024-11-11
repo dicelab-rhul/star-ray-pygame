@@ -94,6 +94,12 @@ class SVGAmbient(XMLAmbient):
         root_attributes.setdefault("y", SVGAmbient.DEFAULT_SVG_POSITION[1])
         root_attributes.setdefault("width", SVGAmbient.DEFAULT_SVG_SIZE[0])
         root_attributes.setdefault("height", SVGAmbient.DEFAULT_SVG_SIZE[1])
+
+        # TODO fix this bug... see issue #1
+        if root_attributes["x"] != 0 or root_attributes["y"] != 0:
+            raise ValueError(
+                "SVGAmbient root attributes x and y are not zero, there is a bug with the SVG coordinate transform which needs to be fixed before the `svg_position` argument can be used."
+            )
         result = self.__update__(Update.new("/svg:svg", root_attributes))
         if isinstance(result, ErrorActiveObservation):
             raise result.exception()  # something bad happened...

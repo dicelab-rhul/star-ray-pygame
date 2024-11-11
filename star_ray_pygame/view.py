@@ -56,12 +56,14 @@ class View:
         self,
         window_config: WindowConfiguration,
         surface_size: tuple[int, int] | None = None,
+        _debug: bool = False,
     ):
         """Constructor.
 
         Args:
             window_config (WindowConfiguration): configuration of the pygame window.
             surface_size (tuple[int, int], optional): size of the render surface (in pixels). Defaults to None, meaning it will be derived from the supplied window size.
+            _debug (bool, optional): whether to enable debug mode, this will render debug information to the UI. Defaults to False.
         """
         pygame.init()
         self._window_config = copy.deepcopy(window_config)
@@ -89,7 +91,7 @@ class View:
                 self.window_size[1] - PADDING,
             )
         # this is where the svg is rendered. It should be the same size as the svg image
-        self._surface = CairoSVGSurface(surface_size)
+        self._surface = CairoSVGSurface(surface_size, _debug=_debug)
         self._closed = False
         self._pwc_window = None
         self._pwc_window = self._setup_pwc_window()

@@ -10,16 +10,18 @@ import re
 class CairoSVGSurface:
     """A surface implementation that is able to render svg graphics to a pygame window."""
 
-    def __init__(self, surface_size: tuple[int, int]):
+    def __init__(self, surface_size: tuple[int, int], _debug: bool = False):
         """Constructor.
 
         Args:
             surface_size (tuple[int,int]) : size of the render surface.
+            _debug (bool, optional): whether to enable debug mode, this will render debug information to the UI. Defaults to False.
         """
         super().__init__()
         self._svg_source = """<svg xmlns="http://www.w3.org/2000/svg"></svg>"""
         self._svg_tree = ET.fromstring(self._svg_source)
         self._surface = pygame.Surface(surface_size)
+        self._debug = _debug
         # position defined in the svg, this is NOT in pixels but in svg coordinates
         self._svg_position = (0, 0)
         # size defined in the svg, this is NOT in pixels but in svg coordinates
