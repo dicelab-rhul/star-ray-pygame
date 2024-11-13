@@ -100,7 +100,9 @@ class SVGAmbient(XMLAmbient):
             raise ValueError(
                 "SVGAmbient root attributes x and y are not zero, there is a bug with the SVG coordinate transform which needs to be fixed before the `svg_position` argument can be used."
             )
-        result = self.__update__(Update.new("/svg:svg", root_attributes))
+        result = self.__update__(
+            Update(xpath="/svg:svg", attrs=root_attributes, source=self.id)
+        )
         if isinstance(result, ErrorActiveObservation):
             raise result.exception()  # something bad happened...
 

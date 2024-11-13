@@ -10,7 +10,7 @@ def _check_libcairo_install():
     WINDOW_NAME = "nt"
     ON_WINDOWS = os.name == WINDOW_NAME
     if ON_WINDOWS:
-        LOGGER.debug("Checking libcairo installation...")
+        # LOGGER.debug("Checking libcairo installation...")
 
         # try to locate GTK installation and add it to path, this is typically not done by default
         gtkbin = r"C:\Program Files\GTK3-Runtime Win64\bin"
