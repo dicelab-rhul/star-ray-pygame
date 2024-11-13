@@ -1,13 +1,14 @@
 [project]
 name = "star_ray_pygame"
-version = "0.0.10"
+version = "0.0.11"
 description = "An extension to the `star_ray` package that uses XML as a description language for the state of an environment."
 authors = [{name = "Benedict Wilkins", email = "benrjw@gmail.com"}]
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies=[
-  "star_ray[xml]>=0.0.7",
+  "star_ray>=0.0.8",
+  "star_ray_xml>=0.0.6",
   "cairosvg>=1.26.1",
   "pygame>=2.6.0",
   "pywinctl>=0.4.0",
